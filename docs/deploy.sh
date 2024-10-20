@@ -59,8 +59,9 @@ installeer_pakketten() {
 
     # Installeer elk pakket dat nog niet is geïnstalleerd
     for pakket in "${pakketten[@]}"; do
-        if [ "$pakket" == "nodejs" ]; then
-            installeer_nodejs  # Installeer Node.js als het in de pakketlijst staat
+        if [[ "$pakket" == nodejs* ]]; then
+            local versie=${pakket#nodejs}  # Haal de versie uit de pakketnaam
+            installeer_nodejs "$versie"  # Installeer Node.js met de opgegeven versie
         else
             if ! dpkg -s "$pakket" >/dev/null 2>&1; then  # Controleer of het pakket al is geïnstalleerd
                 dialog --title "Pakket Installatie" --infobox "Bezig met installeren van ${pakket}..." 10 50
@@ -79,22 +80,23 @@ installeer_pakketten() {
 
 # Functie om Node.js te installeren
 installeer_nodejs() {
+    local versie=${1:-20}  # Standaard naar versie 20 als geen versie is opgegeven
+
     # Voeg de NodeSource repository toe en installeer Node.js met voortgangsweergave in dialog
-    # Hier is nu
     {
         echo "10"; sleep 1
-        echo "# NodeSource repository toevoegen..."
-        curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - >/dev/null 2>&1
+        echo "# NodeSource repository toevoegen voor Node.js versie $versie..."
+        curl -fsSL https://deb.nodesource.com/setup_${versie}.x | sudo -E bash - >/dev/null 2>&1
         echo "50"; sleep 1
         echo "# Node.js installeren..."
         sudo apt-get install -y nodejs >/dev/null 2>&1
         echo "100"; sleep 1
-    } | dialog --title "Node.js Installatie" --gauge "Bezig met installeren van Node.js..." 8 50 0
+    } | dialog --title "Node.js Installatie" --gauge "Bezig met installeren van Node.js versie $versie..." 8 50 0
 
     if [ $? -eq 0 ]; then
-        dialog --title "Node.js Installatie" --msgbox "Node.js succesvol geïnstalleerd." 8 50
+        dialog --title "Node.js Installatie" --msgbox "Node.js versie $versie succesvol geïnstalleerd." 8 50
     else
-        toon_fout "Installatie van Node.js mislukt."
+        toon_fout "Installatie van Node.js versie $versie mislukt."
         exit 1
     fi
 }
