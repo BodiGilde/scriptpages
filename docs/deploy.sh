@@ -65,36 +65,29 @@ installeer_pakketten() {
         else
             if ! dpkg -s "$pakket" >/dev/null 2>&1; then  # Controleer of het pakket al is geïnstalleerd
                 dialog --title "Pakket Installatie" --infobox "Bezig met installeren van ${pakket}..." 10 50
-                sudo apt-get install -y "$pakket" 2>&1 | dialog --title "Pakket Installatie" --progressbox 20 70  # Toon de installatie output in een dialoogvenster
-                if [ $? -eq 0 ]; then
-                    dialog --title "Pakket Installatie" --msgbox "${pakket} succesvol geïnstalleerd." 8 50
-                else
-                    dialog --title "Pakket Installatie" --msgbox "Installatie van ${pakket} mislukt." 8 50
-                fi
-            else
-                dialog --title "Pakket Installatie" --msgbox "${pakket} is al geïnstalleerd." 8 50
-            fi
-        fi
-    done
-}
+                sudo apt-get install -y "$pakket" 2>&1 | dialog --title "Pakket Installatie" --progressbox 20 70  # Toon de 
 
 # Functie om Node.js te installeren
 installeer_nodejs() {
-    local versie=${1:-20}  # Standaard naar versie 20 als geen versie is opgegeven
+    local versie=$1  # Haal de versie uit de argumenten
 
-    # Voeg de NodeSource repository toe en installeer Node.js met voortgangsweergave in dialog
-    dialog --title "Node.js Installatie" --infobox "NodeSource repository toevoegen voor Node.js versie $versie..." 10 50
-    curl -fsSL https://deb.nodesource.com/setup_${versie}.x | sudo bash - 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    # Download het setup script
+    dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js versie $versie..." 10 50
+    curl -fsSL https://deb.nodesource.com/setup_${versie}.x -o nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
 
+    # Voer het setup script uit
+    dialog --title "Node.js Installatie" --infobox "NodeSource setup script uitvoeren..." 10 50
+    sudo bash nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+
+    # Installeer Node.js
     dialog --title "Node.js Installatie" --infobox "Node.js installeren..." 10 50
     sudo apt-get install -y nodejs 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
 
-    if [ $? -eq 0 ]; then
-        dialog --title "Node.js Installatie" --msgbox "Node.js versie $versie succesvol geïnstalleerd." 8 50
-    else
-        toon_fout "Installatie van Node.js versie $versie mislukt."
-        exit 1
-    fi
+    # Verifieer de installatie
+    node -v 2>&1 | dialog --title "Node.js Installatie" --msgbox "Node.js versie $versie succesvol geïnstalleerd. Versie: $(node -v)" 8 50
+
+    # Verwijder het setup script
+    sudo rm nodesource_setup.sh
 }
 
 # Functie om archieven te extraheren met sudo
@@ -159,7 +152,7 @@ fi
 
 # Stap 1: Invoer voor pakket/afhankelijkheden URL
 pakket_url=$(krijg_invoer "Package lijst" "Vul het package/dependencies URL van het dashboard in:")
-if [ -z "$pakket_url" ]; then
+if [ -z "$pakket_url" ]; dan
     toon_fout "Package URL is vereist."
     clear
     exit 1
@@ -167,7 +160,7 @@ fi
 
 # Stap 2: Lees pakketten van URL
 pakketten=$(curl -s "$pakket_url")
-if [ -z "$pakketten" ]; then
+if [ -z "$pakketten" ]; dan
     toon_fout "Package lijst kan niet worden gelezen."
     clear
     exit 1
