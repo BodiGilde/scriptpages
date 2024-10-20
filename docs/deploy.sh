@@ -1,5 +1,16 @@
 #!/bin/bash
 
+# Functie om een splashscreen weer te geven
+toon_splashscreen() {
+    clear
+    echo "****************************************"
+    echo "*                                      *"
+    echo "*          Placeholder Text            *"
+    echo "*                                      *"
+    echo "****************************************"
+    sleep 5
+}
+
 # Functie om foutmeldingen weer te geven
 toon_fout() {
     dialog --title "Fout" --msgbox "$1" 8 50
@@ -53,7 +64,7 @@ controleer_en_installeer_pakketten() {
     if [ -n "$vereiste_pakketten" ]; then
         dialog --title "Pakket Installatie" --yesno "De volgende pakketten zijn vereist: $vereiste_pakketten. Wilt u deze installeren?" 8 60
         response=$?
-        if [ $response -eq 0 ]; then
+        if [ $response -eq 0 ]; dan
             installeer_pakketten "$vereiste_pakketten"
         else
             toon_fout "Vereiste pakketten zijn niet geïnstalleerd. Kan niet doorgaan met extractie."
@@ -83,7 +94,7 @@ extraheer_archief() {
 # Functie om project te downloaden en te extraheren
 download_en_extraheer_project() {
     local invoer=$1
-    if [[ "$invoer" =~ ^https?:// ]]; then
+    if [[ "$invoer" =~ ^https?:// ]]; dan
         # Invoer is een URL
         project_bestandsnaam=$(basename "$invoer")
         wget "$invoer" -O "$project_bestandsnaam"
@@ -109,6 +120,18 @@ download_en_extraheer_project() {
 }
 
 # Hoofdscript begint hier
+
+# Toon splashscreen
+toon_splashscreen
+
+# Installeer dialog altijd automatisch
+echo "Dialog wordt geïnstalleerd..."
+sudo apt-get update
+sudo apt-get install -y dialog
+if [ $? -ne 0 ]; dan
+    echo "Installatie van dialog mislukt. Script wordt beëindigd."
+    exit 1
+fi
 
 # Stap 1: Invoer voor pakket/afhankelijkheden URL
 pakket_url=$(krijg_invoer "Pakket Invoer" "Voer pakket/afhankelijkheden URL in:")
