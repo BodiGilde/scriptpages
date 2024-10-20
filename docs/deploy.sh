@@ -58,23 +58,39 @@ installeer_pakketten() {
     local pakketten=($1)
     local status=""
 
-    # Installeer elk package dat nog niet is geïnstalleerd
+    # Installeer elk pakket dat nog niet is geïnstalleerd
     for pakket in "${pakketten[@]}"; do
-        if ! dpkg -s "$pakket" >/dev/null 2>&1; then  # Controleer of het package al is geïnstalleerd
-            status="${status}Bezig met installeren van ${pakket}...\n"
-            dialog --title "Pakket Installatie" --infobox "$status" 10 50  # Toon een informatiescherm met de installatie status
-            sudo apt-get install -y "$pakket" >/dev/null 2>&1  # Installeer de package zonder user input
-            if [ $? -eq 0 ]; then
-                status="${status}${pakket} succesvol geïnstalleerd.\n"
-            else
-                status="${status}Installatie van ${pakket} mislukt.\n"
-            fi
+        if [ "$pakket" == "nodejs" ]; then
+            installeer_nodejs  # Installeer Node.js als het in de pakketlijst staat
         else
-            status="${status}${pakket} is al geïnstalleerd.\n"
+            if ! dpkg -s "$pakket" >/dev/null 2>&1; then  # Controleer of het pakket al is geïnstalleerd
+                status="${status}Bezig met installeren van ${pakket}...\n"
+                dialog --title "Pakket Installatie" --infobox "$status" 10 50  # Toon een informatiescherm met de installatie status
+                sudo apt-get install -y "$pakket" >/dev/null 2>&1  # Installeer het pakket stilletjes
+                if [ $? -eq 0 ]; then
+                    status="${status}${pakket} succesvol geïnstalleerd.\n"
+                else
+                    status="${status}Installatie van ${pakket} mislukt.\n"
+                fi
+            else
+                status="${status}${pakket} is al geïnstalleerd.\n"
+            fi
+            dialog --title "Pakket Installatie" --infobox "$status" 10 50  # Update het informatiescherm met de installatie status
         fi
-        dialog --title "Pakket Installatie" --infobox "$status" 10 50  # Update het informatiescherm met de installatie status
     done
     dialog --title "Pakket Installatie" --msgbox "$status" 10 50  # Toon de uiteindelijke installatie status
+}
+
+# Functie om Node.js te installeren
+installeer_nodejs() {
+    curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -  # Voeg de NodeSource repository toe
+    sudo apt-get install -y nodejs  # Installeer Node.js
+    if [ $? -eq 0 ]; then
+        dialog --title "Node.js Installatie" --msgbox "Node.js succesvol geïnstalleerd." 8 50
+    else
+        toon_fout "Installatie van Node.js mislukt."
+        exit 1
+    fi
 }
 
 # Functie om archieven te extraheren met sudo
