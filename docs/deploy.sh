@@ -122,7 +122,7 @@ download_en_extraheer_project() {
         # Invoer is een URL
         project_bestandsnaam=$(basename "$invoer")
         wget "$invoer" -O "$project_bestandsnaam"  # Download het projectbestand
-        if [ $? -ne 0 ]; dan
+        if [ $? -ne 0 ]; then
             toon_fout "Downloaden van het project mislukt."
             clear
             exit 1
