@@ -65,11 +65,28 @@ installeer_pakketten() {
         else
             if ! dpkg -s "$pakket" >/dev/null 2>&1; then  # Controleer of het pakket al is geïnstalleerd
                 dialog --title "Pakket Installatie" --infobox "Bezig met installeren van ${pakket}..." 10 50
-                sudo apt-get install -y "$pakket" 2>&1 | dialog --title "Pakket Installatie" --progressbox 20 70  # Toon de 
+                sudo apt-get install -y "$pakket" 2>&1 | dialog --title "Pakket Installatie" --progressbox 20 70  # Toon de installatie output in een dialoogvenster
+                if [ $? -eq 0 ]; then
+                    dialog --title "Pakket Installatie" --msgbox "${pakket} succesvol geïnstalleerd." 8 50
+                else
+                    dialog --title "Pakket Installatie" --msgbox "Installatie van ${pakket} mislukt." 8 50
+                fi
+            else
+                dialog --title "Pakket Installatie" --msgbox "${pakket} is al geïnstalleerd." 8 50
+            fi
+        fi
+    done
+}
 
 # Functie om Node.js te installeren
 installeer_nodejs() {
     local versie=$1  # Haal de versie uit de argumenten
+
+    # Installeer curl als het nog niet is geïnstalleerd
+    if ! dpkg -s curl >/dev/null 2>&1; then
+        dialog --title "curl Installatie" --infobox "curl wordt geïnstalleerd..." 10 50
+        sudo apt-get install -y curl 2>&1 | dialog --title "curl Installatie" --progressbox 20 70
+    fi
 
     # Download het setup script
     dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js versie $versie..." 10 50
@@ -152,7 +169,7 @@ fi
 
 # Stap 1: Invoer voor pakket/afhankelijkheden URL
 pakket_url=$(krijg_invoer "Package lijst" "Vul het package/dependencies URL van het dashboard in:")
-if [ -z "$pakket_url" ]; dan
+if [ -z "$pakket_url" ]; then
     toon_fout "Package URL is vereist."
     clear
     exit 1
@@ -160,7 +177,7 @@ fi
 
 # Stap 2: Lees pakketten van URL
 pakketten=$(curl -s "$pakket_url")
-if [ -z "$pakketten" ]; dan
+if [ -z "$pakketten" ]; then
     toon_fout "Package lijst kan niet worden gelezen."
     clear
     exit 1
