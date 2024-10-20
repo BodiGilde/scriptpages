@@ -122,7 +122,7 @@ download_en_extraheer_project() {
         # Invoer is een URL
         project_bestandsnaam=$(basename "$invoer")
         wget "$invoer" -O "$project_bestandsnaam"  # Download het projectbestand
-        if [ $? -ne 0 ]; then
+        if [ $? -ne 0 ]; dan
             toon_fout "Downloaden van het project mislukt."
             clear
             exit 1
@@ -159,7 +159,7 @@ fi
 
 # Stap 1: Invoer voor pakket/afhankelijkheden URL
 pakket_url=$(krijg_invoer "Package lijst" "Vul het package/dependencies URL van het dashboard in:")
-if [ -z "$pakket_url" ]; dan
+if [ -z "$pakket_url" ]; then
     toon_fout "Package URL is vereist."
     clear
     exit 1
@@ -167,7 +167,7 @@ fi
 
 # Stap 2: Lees pakketten van URL
 pakketten=$(curl -s "$pakket_url")
-if [ -z "$pakketten" ]; dan
+if [ -z "$pakketten" ]; then
     toon_fout "Package lijst kan niet worden gelezen."
     clear
     exit 1
