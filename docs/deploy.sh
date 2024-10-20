@@ -83,15 +83,11 @@ installeer_nodejs() {
     local versie=${1:-20}  # Standaard naar versie 20 als geen versie is opgegeven
 
     # Voeg de NodeSource repository toe en installeer Node.js met voortgangsweergave in dialog
-    {
-        echo "10"; sleep 1
-        echo "# NodeSource repository toevoegen voor Node.js versie $versie..."
-        curl -fsSL https://deb.nodesource.com/setup_${versie}.x | sudo bash -
-        echo "50"; sleep 1
-        echo "# Node.js installeren..."
-        sudo apt-get install -y nodejs
-        echo "100"; sleep 1
-    } | dialog --title "Node.js Installatie" --gauge "Bezig met installeren van Node.js versie $versie..." 8 50 0
+    dialog --title "Node.js Installatie" --infobox "NodeSource repository toevoegen voor Node.js versie $versie..." 10 50
+    curl -fsSL https://deb.nodesource.com/setup_${versie}.x | sudo bash - 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+
+    dialog --title "Node.js Installatie" --infobox "Node.js installeren..." 10 50
+    sudo apt-get install -y nodejs 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
 
     if [ $? -eq 0 ]; then
         dialog --title "Node.js Installatie" --msgbox "Node.js versie $versie succesvol geïnstalleerd." 8 50
@@ -163,7 +159,7 @@ fi
 
 # Stap 1: Invoer voor pakket/afhankelijkheden URL
 pakket_url=$(krijg_invoer "Package lijst" "Vul het package/dependencies URL van het dashboard in:")
-if [ -z "$pakket_url" ]; then
+if [ -z "$pakket_url" ]; dan
     toon_fout "Package URL is vereist."
     clear
     exit 1
@@ -171,7 +167,7 @@ fi
 
 # Stap 2: Lees pakketten van URL
 pakketten=$(curl -s "$pakket_url")
-if [ -z "$pakketten" ]; then
+if [ -z "$pakketten" ]; dan
     toon_fout "Package lijst kan niet worden gelezen."
     clear
     exit 1
