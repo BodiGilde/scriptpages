@@ -3,18 +3,12 @@
 # Functie om een splashscreen weer te geven
 toon_splashscreen() {
     clear 
-    echo " ___          _        _	           "             
-    echo "| _ \_ _ ___ (_)___ __| |_           "
-    echo "|  _/ '_/ _ \| / -_) _|  _|          "
-    echo "|_|_|_| \___// \___\__|\__| ___ _  _ "
-    echo "|   \ ___ _|__/ |___ _  _  / __| || |"
-    echo "| |) / -_) '_ \ / _ \ || | \__ \ __ |"
-    echo "|___/\___| .__/_\___/\_, | |___/_||_|"
-    echo " ___   __|_| ___ __ _|__/ _          "
-    echo "| _ ) | _ \ |_  )  \_  ) | |         "
-    echo "| _ \_|  _/  / / () / /|_  _|        "
-    echo "|___(_)_|   /___\__/___| |_|         "
-    echo " V0.8                                "
+    echo
+    echo "X+++++++++++++++++++++++X"
+    echo "| Project Deploy Script |"
+    echo "| V0.8-PreProd          |"
+    echo "| B.P                   |"
+    echo "X+++++++++++++++++++++++X"
     sleep 3
 }
 
