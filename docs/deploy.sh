@@ -27,11 +27,11 @@ toon_voortgang() {
     echo "$1" | dialog --title "Voortgang" --gauge "Even geduld aub..." 8 50 0  # Toon een voortgangsbalk
 }
 
-# Functie om vereiste packages te controleren en te installeren
+# Functie om vereiste pakketten te controleren en te installeren
 controleer_en_installeer_pakketten() {
     local vereiste_pakketten=""
 
-    # Controleer het bestandstype en bepaal welke packages nodig zijn
+    # Controleer het bestandstype en bepaal welke pakketten nodig zijn
     case ${1,,} in
         *.zip)     vereiste_pakketten="unzip" ;;
         *.gz)      vereiste_pakketten="gzip" ;;
@@ -40,12 +40,12 @@ controleer_en_installeer_pakketten() {
         *.7z)      vereiste_pakketten="p7zip-full" ;;
     esac
 
-    # Als er vereiste package zijn, vraag de gebruiker om toestemming om ze te installeren
+    # Als er vereiste pakketten zijn, vraag de gebruiker om toestemming om ze te installeren
     if [ -n "$vereiste_pakketten" ]; then
         dialog --title "Pakket Installatie" --yesno "De volgende packages zijn vereist voor het unzippen: $vereiste_pakketten. Wilt u deze installeren?" 8 60
         response=$?
         if [ $response -eq 0 ]; then
-            installeer_pakketten "$vereiste_pakketten"  # Installeer de vereiste packages
+            installeer_pakketten "$vereiste_pakketten"  # Installeer de vereiste pakketten
         else
             toon_fout "Vereiste packages zijn niet geïnstalleerd. Kan niet doorgaan met unzippen."
             exit 1
@@ -53,10 +53,9 @@ controleer_en_installeer_pakketten() {
     fi
 }
 
-# Functie om packages te installeren
+# Functie om pakketten te installeren
 installeer_pakketten() {
     local pakketten=($1)
-    local status=""
 
     # Installeer elk pakket dat nog niet is geïnstalleerd
     for pakket in "${pakketten[@]}"; do
@@ -64,27 +63,34 @@ installeer_pakketten() {
             installeer_nodejs  # Installeer Node.js als het in de pakketlijst staat
         else
             if ! dpkg -s "$pakket" >/dev/null 2>&1; then  # Controleer of het pakket al is geïnstalleerd
-                status="${status}Bezig met installeren van ${pakket}...\n"
-                dialog --title "Pakket Installatie" --infobox "$status" 10 50  # Toon een informatiescherm met de installatie status
-                sudo apt-get install -y "$pakket" >/dev/null 2>&1  # Installeer het pakket stilletjes
+                dialog --title "Pakket Installatie" --infobox "Bezig met installeren van ${pakket}..." 10 50
+                sudo apt-get install -y "$pakket" 2>&1 | dialog --title "Pakket Installatie" --progressbox 20 70  # Toon de installatie output in een dialoogvenster
                 if [ $? -eq 0 ]; then
-                    status="${status}${pakket} succesvol geïnstalleerd.\n"
+                    dialog --title "Pakket Installatie" --msgbox "${pakket} succesvol geïnstalleerd." 8 50
                 else
-                    status="${status}Installatie van ${pakket} mislukt.\n"
+                    dialog --title "Pakket Installatie" --msgbox "Installatie van ${pakket} mislukt." 8 50
                 fi
             else
-                status="${status}${pakket} is al geïnstalleerd.\n"
+                dialog --title "Pakket Installatie" --msgbox "${pakket} is al geïnstalleerd." 8 50
             fi
-            dialog --title "Pakket Installatie" --infobox "$status" 10 50  # Update het informatiescherm met de installatie status
         fi
     done
-    dialog --title "Pakket Installatie" --msgbox "$status" 10 50  # Toon de uiteindelijke installatie status
 }
 
 # Functie om Node.js te installeren
 installeer_nodejs() {
-    curl -fsSL https://deb.nodesource.com/setup_16.x | sudo -E bash -  # Voeg de NodeSource repository toe
-    sudo apt-get install -y nodejs  # Installeer Node.js
+    # Voeg de NodeSource repository toe en installeer Node.js met voortgangsweergave in dialog
+    # Hier is nu
+    {
+        echo "10"; sleep 1
+        echo "# NodeSource repository toevoegen..."
+        curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash - >/dev/null 2>&1
+        echo "50"; sleep 1
+        echo "# Node.js installeren..."
+        sudo apt-get install -y nodejs >/dev/null 2>&1
+        echo "100"; sleep 1
+    } | dialog --title "Node.js Installatie" --gauge "Bezig met installeren van Node.js..." 8 50 0
+
     if [ $? -eq 0 ]; then
         dialog --title "Node.js Installatie" --msgbox "Node.js succesvol geïnstalleerd." 8 50
     else
@@ -96,22 +102,22 @@ installeer_nodejs() {
 # Functie om archieven te extraheren met sudo
 extraheer_archief() {
     local bestand=$1
-    controleer_en_installeer_pakketten "$bestand"  # Controleer en installeer vereiste packages
+    controleer_en_installeer_pakketten "$bestand"  # Controleer en installeer vereiste pakketten
     case ${bestand,,} in
-        *.zip)     sudo unzip "$bestand" ;;  
-        *.tar.gz|*.tgz)  sudo tar -xzvf "$bestand" ;;  
-        *.tar.bz2) sudo tar -xjvf "$bestand" ;;  
-        *.tar)     sudo tar -xvf "$bestand" ;;  
-        *.gz)      sudo gunzip "$bestand" ;; 
-        *.bz2)     sudo bunzip2 "$bestand" ;;  
-        *.rar)     sudo unrar x "$bestand" ;;  
-        *.7z)      sudo 7z x "$bestand" ;;  #
+        *.zip)     sudo unzip "$bestand" ;;  # Extraheer een zip-bestand
+        *.tar.gz|*.tgz)  sudo tar -xzvf "$bestand" ;;  # Extraheer een tar.gz-bestand
+        *.tar.bz2) sudo tar -xjvf "$bestand" ;;  # Extraheer een tar.bz2-bestand
+        *.tar)     sudo tar -xvf "$bestand" ;;  # Extraheer een tar-bestand
+        *.gz)      sudo gunzip "$bestand" ;;  # Extraheer een gz-bestand
+        *.bz2)     sudo bunzip2 "$bestand" ;;  # Extraheer een bz2-bestand
+        *.rar)     sudo unrar x "$bestand" ;;  # Extraheer een rar-bestand
+        *.7z)      sudo 7z x "$bestand" ;;  # Extraheer een 7z-bestand
         *)         toon_fout "Niet ondersteund zip bestand" && return 1 ;;  # Toon een foutmelding voor niet-ondersteunde bestandstypen
     esac
     return $?
 }
 
-# Functie om project te downloaden en te unzippen
+# Functie om project te downloaden en te extraheren
 download_en_extraheer_project() {
     local invoer=$1
     if [[ "$invoer" =~ ^https?:// ]]; then
@@ -123,12 +129,12 @@ download_en_extraheer_project() {
             clear
             exit 1
         fi
-        extraheer_archief "$project_bestandsnaam"  # Unzip het gedownloade projectbestand
-        sudo rm "$project_bestandsnaam"  # Verwijder het gedownloade bestand na unzippen
+        extraheer_archief "$project_bestandsnaam"  # Extraheer het gedownloade projectbestand
+        sudo rm "$project_bestandsnaam"  # Verwijder het gedownloade bestand na extractie
     else
         # Invoer is een lokaal pad
         if [ -f "$invoer" ]; then
-            extraheer_archief "$invoer"  # Unzip het lokale projectbestand
+            extraheer_archief "$invoer"  # Extraheer het lokale projectbestand
         elif [ -d "$invoer" ]; then
             cp -r "$invoer"/* .  # Kopieer de inhoud van de lokale directory naar de huidige directory
         else
@@ -139,21 +145,21 @@ download_en_extraheer_project() {
     fi
 }
 
-# Hoofdscript begint hier, alles hierboven zijn subscripts die worden aangeroepen door het hoofdscript.
+# Hoofdscript begint hier
 
 # Toon splashscreen
 toon_splashscreen
 
 # Installeer dialog altijd automatisch
 echo "Vereist package dialog wordt geïnstalleerd..."
-sudo apt-get update  # Werk de package lijst bij
-sudo apt-get install -y dialog  # Installeer het dialog package zonder user invoer
+sudo apt-get update  # Werk de pakketlijst bij
+sudo apt-get install -y dialog  # Installeer het dialog pakket stilletjes
 if [ $? -ne 0 ]; then
     echo "Installatie van dialog mislukt. Script wordt beëindigd."
     exit 1
 fi
 
-# Stap 1: Invoer voor packages/dependencies URL
+# Stap 1: Invoer voor pakket/afhankelijkheden URL
 pakket_url=$(krijg_invoer "Package lijst" "Vul het package/dependencies URL van het dashboard in:")
 if [ -z "$pakket_url" ]; then
     toon_fout "Package URL is vereist."
@@ -161,7 +167,7 @@ if [ -z "$pakket_url" ]; then
     exit 1
 fi
 
-# Stap 2: Lees packages van URL
+# Stap 2: Lees pakketten van URL
 pakketten=$(curl -s "$pakket_url")
 if [ -z "$pakketten" ]; then
     toon_fout "Package lijst kan niet worden gelezen."
@@ -172,7 +178,7 @@ fi
 # Stap 3: Installeer pakketten
 installeer_pakketten "$pakketten"
 
-# Stap 4: Invoer voor project ZIP of map
+# Stap 4: Invoer voor projectarchief of map
 project_invoer=$(krijg_invoer "Project Invoer" "Voer projectarchief URL of lokaal pad in:")
 if [ -z "$project_invoer" ]; then
     toon_fout "Project invoer is vereist."
@@ -185,6 +191,6 @@ toon_voortgang "50"  # Toon voortgangsbalk op 50%
 download_en_extraheer_project "$project_invoer"
 
 # Stap 6: Voltooiing
-dialog --title "Voltooid" --msgbox "De deployment van het project is voltooid." 8 50  
+dialog --title "Voltooid" --msgbox "De deployment van het project is voltooid." 8 50  # Toon voltooiingsbericht
 
-clear  # Wis het scherm nadat het script is voltooid
+clear  # Wis het scherm na voltooiing
