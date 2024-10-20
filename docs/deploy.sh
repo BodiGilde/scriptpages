@@ -82,12 +82,6 @@ installeer_pakketten() {
 installeer_nodejs() {
     local versie=$1  # Haal de versie uit de argumenten
 
-    # Installeer curl als het nog niet is geïnstalleerd
-    if ! dpkg -s curl >/dev/null 2>&1; then
-        dialog --title "curl Installatie" --infobox "curl wordt geïnstalleerd..." 10 50
-        sudo apt-get install -y curl 2>&1 | dialog --title "curl Installatie" --progressbox 20 70
-    fi
-
     # Download het setup script
     dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js versie $versie..." 10 50
     curl -fsSL https://deb.nodesource.com/setup_${versie}.x -o nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
