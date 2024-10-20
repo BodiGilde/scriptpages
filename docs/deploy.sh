@@ -82,17 +82,51 @@ installeer_pakketten() {
 installeer_nodejs() {
     local versie=$1  # Haal de versie uit de argumenten
 
-    # Download het setup script
-    dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js versie $versie..." 10 50
-    curl -fsSL https://deb.nodesource.com/setup_${versie}.x -o nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    # Installeer curl als het nog niet is geïnstalleerd
+    if ! dpkg -s curl >/dev/null 2>&1; then
+        dialog --title "curl Installatie" --infobox "curl wordt geïnstalleerd..." 10 50
+        apt-get install -y curl 2>&1 | dialog --title "curl Installatie" --progressbox 20 70
+    fi
 
-    # Voer het setup script uit
-    dialog --title "Node.js Installatie" --infobox "NodeSource setup script uitvoeren..." 10 50
-    sudo bash nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    # Download het setup script en voer het uit op basis van de opgegeven versie
+    if [ "$versie" == "23" ]; then
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js versie 23..." 10 50
+        curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script uitvoeren..." 10 50
+        bash nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    elif [ "$versie" == "22" ]; then
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js versie 22..." 10 50
+        curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script uitvoeren..." 10 50
+        bash nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    elif [ "$versie" == "20" ]; then
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js versie 20..." 10 50
+        curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script uitvoeren..." 10 50
+        bash nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    elif [ "$versie" == "18" ]; then
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js versie 18..." 10 50
+        curl -fsSL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script uitvoeren..." 10 50
+        bash nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    elif [ "$versie" == "lts" ]; then
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js LTS..." 10 50
+        curl -fsSL https://deb.nodesource.com/setup_lts.x -o nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script uitvoeren..." 10 50
+        bash nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    elif [ "$versie" == "current" ]; then
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script downloaden voor Node.js Current..." 10 50
+        curl -fsSL https://deb.nodesource.com/setup_current.x -o nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+        dialog --title "Node.js Installatie" --infobox "NodeSource setup script uitvoeren..." 10 50
+        bash nodesource_setup.sh 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    else
+        toon_fout "Ongeldige Node.js versie opgegeven."
+        exit 1
+    fi
 
     # Installeer Node.js
     dialog --title "Node.js Installatie" --infobox "Node.js installeren..." 10 50
-    sudo apt-get install -y nodejs 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
+    apt-get install -y nodejs 2>&1 | dialog --title "Node.js Installatie" --progressbox 20 70
 
     # Verifieer de installatie
     node -v 2>&1 | dialog --title "Node.js Installatie" --msgbox "Node.js versie $versie succesvol geïnstalleerd. Versie: $(node -v)" 8 50
