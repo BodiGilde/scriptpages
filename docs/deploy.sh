@@ -43,10 +43,10 @@ controleer_en_installeer_pakketten() {
         *.7z)      vereiste_pakketten="p7zip-full" ;;
     esac
 
-    if [ -n "$vereiste_pakketten" ]; dan
+    if [ -n "$vereiste_pakketten" ]; then
         dialog --title "Pakket Installatie" --yesno "De volgende packages zijn vereist voor het unzippen: $vereiste_pakketten. Wilt u deze installeren?" 8 60
         response=$?
-        if [ $response -eq 0 ]; dan
+        if [ $response -eq 0 ]; then
             installeer_pakketten "$vereiste_pakketten"
         else
             toon_fout "Vereiste packages zijn niet geïnstalleerd. Kan niet doorgaan met unzippen."
@@ -73,9 +73,9 @@ installeer_pakketten() {
         else
             status="${status}${pakket} is al geïnstalleerd.\n"
         fi
-        dialog --title "Package Installatie" --infobox "$status" 10 50
+        dialog --title "Pakket Installatie" --infobox "$status" 10 50
     done
-    dialog --title "Package Installatie" --msgbox "$status" 10 50
+    dialog --title "Pakket Installatie" --msgbox "$status" 10 50
 }
 
 # Functie om archieven te extraheren met sudo
@@ -99,11 +99,11 @@ extraheer_archief() {
 # Functie om project te downloaden en te extraheren
 download_en_extraheer_project() {
     local invoer=$1
-    if [[ "$invoer" =~ ^https?:// ]]; dan
+    if [[ "$invoer" =~ ^https?:// ]]; then
         # Invoer is een URL
         project_bestandsnaam=$(basename "$invoer")
         wget "$invoer" -O "$project_bestandsnaam"
-        if [ $? -ne 0 ]; dan
+        if [ $? -ne 0 ]; then
             toon_fout "Downloaden van het project mislukt."
             clear
             exit 1
@@ -112,9 +112,9 @@ download_en_extraheer_project() {
         sudo rm "$project_bestandsnaam"
     else
         # Invoer is een lokaal pad
-        if [ -f "$invoer" ]; dan
+        if [ -f "$invoer" ]; then
             extraheer_archief "$invoer"
-        elif [ -d "$invoer" ]; dan
+        elif [ -d "$invoer" ]; then
             cp -r "$invoer"/* .
         else
             toon_fout "Ongeldig bestand of directory locatie."
@@ -133,14 +133,14 @@ toon_splashscreen
 echo "Vereist package dialog wordt geïnstalleerd..."
 sudo apt-get update
 sudo apt-get install -y dialog
-if [ $? -ne 0 ]; dan
-    echo "Dialog mislukt, kan script niet verder uitvoeren."
+if [ $? -ne 0 ]; then
+    echo "Installatie van dialog mislukt. Script wordt beëindigd."
     exit 1
 fi
 
 # Stap 1: Invoer voor pakket/afhankelijkheden URL
-pakket_url=$(krijg_invoer "Package lijst" "Vul het package/dependencies  URL van het dashboard in:")
-if [ -z "$pakket_url" ]; dan
+pakket_url=$(krijg_invoer "Package lijst" "Vul het package/dependencies URL van het dashboard in:")
+if [ -z "$pakket_url" ]; then
     toon_fout "Package URL is vereist."
     clear
     exit 1
@@ -148,7 +148,7 @@ fi
 
 # Stap 2: Lees pakketten van URL
 pakketten=$(curl -s "$pakket_url")
-if [ -z "$pakketten" ]; dan
+if [ -z "$pakketten" ]; then
     toon_fout "Package lijst kan niet worden gelezen."
     clear
     exit 1
@@ -159,7 +159,7 @@ installeer_pakketten "$pakketten"
 
 # Stap 4: Invoer voor projectarchief of map
 project_invoer=$(krijg_invoer "Project Invoer" "Voer projectarchief URL of lokaal pad in:")
-if [ -z "$project_invoer" ]; dan
+if [ -z "$project_invoer" ]; then
     toon_fout "Project invoer is vereist."
     clear
     exit 1
