@@ -86,10 +86,10 @@ installeer_nodejs() {
     {
         echo "10"; sleep 1
         echo "# NodeSource repository toevoegen voor Node.js versie $versie..."
-        curl -fsSL https://deb.nodesource.com/setup_${versie}.x | sudo -E bash - >/dev/null 2>&1
+        curl -fsSL https://deb.nodesource.com/setup_${versie}.x | sudo bash -
         echo "50"; sleep 1
         echo "# Node.js installeren..."
-        sudo apt-get install -y nodejs >/dev/null 2>&1
+        sudo apt-get install -y nodejs
         echo "100"; sleep 1
     } | dialog --title "Node.js Installatie" --gauge "Bezig met installeren van Node.js versie $versie..." 8 50 0
 
