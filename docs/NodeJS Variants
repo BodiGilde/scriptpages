@@ -1,0 +1,44 @@
+NodeJS23
+curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
+bash nodesource_setup.sh
+apt-get install -y nodejs
+node -v
+
+NodeJS22
+curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+bash nodesource_setup.sh
+apt-get install -y nodejs
+node -v
+
+NodeJS21
+curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+bash nodesource_setup.sh
+apt-get install -y nodejs
+node -v
+
+NodeJS20
+curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
+bash nodesource_setup.sh
+apt-get install -y nodejs
+node -v
+
+NodeJS18
+curl -fsSL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
+bash nodesource_setup.sh
+apt-get install -y nodejs
+node -v
+
+NodeJSLTS
+curl -fsSL https://deb.nodesource.com/setup_lts.x -o nodesource_setup.sh
+bash nodesource_setup.sh
+apt-get install -y nodejs
+node -v
+
+NodeJSCurrent (23)
+curl -fsSL https://deb.nodesource.com/setup_current.x -o nodesource_setup.sh
+bash nodesource_setup.sh
+apt-get install -y nodejs
+node -v
+
+Bron:
+https://github.com/nodesource/distributions
