@@ -8,11 +8,14 @@ if ! command -v curl &> /dev/null; then
 fi
 
 # Vraag om de URL van de package lijst
-read -p "Voer de URL van de package lijst in: " pakket_url
-if [ -z "$pakket_url" ]; then
-    echo "Package URL is vereist."
-    exit 1
-fi
+while true; do
+    read -p "Voer de URL van de package lijst in: " pakket_url
+    if [ -n "$pakket_url" ]; then
+        break
+    else
+        echo "Package URL is vereist."
+    fi
+done
 
 # Lees pakketten van URL
 pakketten=$(curl -s "$pakket_url")
