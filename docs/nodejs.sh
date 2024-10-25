@@ -1,79 +1,122 @@
 #!/bin/bash
 
-# Controleer of curl is geïnstalleerd, zo niet, installeer het
-if ! command -v curl &> /dev/null; then
-    echo "curl is niet geïnstalleerd. Installeren van curl..."
-    apt-get update
-    apt-get install -y curl
-fi
+# Functie om een splashscreen weer te geven met korte informatie over het script
+toon_splashscreen() {
+    clear 
+    echo
+    echo "X+++++++++++++++++++++++X"
+    echo "| NodeJS Install Script |"
+    echo "| V1.0                  |"
+    echo "| B.P                   |"
+    echo "X+++++++++++++++++++++++X"
+    sleep 4  # Wacht 4 seconden voordat je verder gaat
+}
 
-# Vraag om de URL van de package lijst
-while true; do
-    read -p "Voer de URL van de package lijst in: " pakket_url
-    if [ -n "$pakket_url" ]; then
-        break
-    else
-        echo "Package URL is vereist."
-    fi
-done
+# Functie om foutmeldingen weer te geven
+toon_fout() {
+    dialog --title "Fout" --msgbox "$1" 8 50  # Toon een foutmelding in een dialoogvenster
+}
 
-# Lees pakketten van URL
-pakketten=$(curl -s "$pakket_url")
-if [ -z "$pakketten" ]; then
-    echo "Package lijst kan niet worden gelezen."
+# Functie om gebruikersinvoer te krijgen
+krijg_invoer() {
+    dialog --title "$1" --inputbox "$2" 8 60 3>&1 1>&2 2>&3  # Vraag de gebruiker om invoer via een dialoogvenster
+}
+
+# Functie om voortgang weer te geven
+toon_voortgang() {
+    echo "$1" | dialog --title "Voortgang" --gauge "Even geduld aub..." 8 50 0  # Toon een voortgangsbalk
+}
+
+# Functie om NodeJS te installeren
+installeer_nodejs() {
+    local versie=$1
+    case $versie in
+        NodeJS23)
+            curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
+            bash nodesource_setup.sh
+            apt-get install -y nodejs
+            node -v
+            ;;
+        NodeJS22)
+            curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
+            bash nodesource_setup.sh
+            apt-get install -y nodejs
+            node -v
+            ;;
+        NodeJS21)
+            curl -fsSL https://deb.nodesource.com/setup_21.x -o nodesource_setup.sh
+            bash nodesource_setup.sh
+            apt-get install -y nodejs
+            node -v
+            ;;
+        NodeJS20)
+            curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
+            bash nodesource_setup.sh
+            apt-get install -y nodejs
+            node -v
+            ;;
+        NodeJS18)
+            curl -fsSL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
+            bash nodesource_setup.sh
+            apt-get install -y nodejs
+            node -v
+            ;;
+        NodeJSLTS)
+            curl -fsSL https://deb.nodesource.com/setup_lts.x -o nodesource_setup.sh
+            bash nodesource_setup.sh
+            apt-get install -y nodejs
+            node -v
+            ;;
+        NodeJSCurrent)
+            curl -fsSL https://deb.nodesource.com/setup_current.x -o nodesource_setup.sh
+            bash nodesource_setup.sh
+            apt-get install -y nodejs
+            node -v
+            ;;
+        *)
+            toon_fout "Onbekende versie: $versie"
+            ;;
+    esac
+    sudo rm nodesource_setup.sh  # Verwijder het setup script
+}
+
+# Hoofdscript begint hier
+
+# Toon splashscreen
+toon_splashscreen
+
+# Installeer dialog altijd automatisch
+echo "Vereist package dialog wordt geïnstalleerd..."
+sudo apt-get update  # Werk de pakketlijst bij
+sudo apt-get install -y dialog  # Installeer het dialog pakket stilletjes
+if [ $? -ne 0 ]; then
+    echo "Installatie van dialog mislukt. Script wordt beëindigd."
     exit 1
 fi
 
-# Installeer elke versie
-echo "$pakketten" | while IFS= read -r package; do
-    echo "Installeren van $package..."
-    
-    if [ "$package" == "NodeJS23" ]; then
-        echo "NodeJS23 is de nieuwste versie!"
-        curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
-        bash nodesource_setup.sh
-        apt-get install -y nodejs
-        node -v
-    elif [ "$package" == "NodeJS22" ]; then
-        echo "NodeJS22 is een stabiele versie."
-        curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
-        bash nodesource_setup.sh
-        apt-get install -y nodejs
-        node -v
-    elif [ "$package" == "NodeJS21" ]; then
-        echo "NodeJS21 heeft enkele nieuwe features."
-        curl -fsSL https://deb.nodesource.com/setup_21.x -o nodesource_setup.sh
-        bash nodesource_setup.sh
-        apt-get install -y nodejs
-        node -v
-    elif [ "$package" == "NodeJS20" ]; then
-        echo "NodeJS20 is een oudere versie."
-        curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
-        bash nodesource_setup.sh
-        apt-get install -y nodejs
-        node -v
-    elif [ "$package" == "NodeJS18" ]; then
-        echo "NodeJS18 is een LTS (Long Term Support) versie."
-        curl -fsSL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
-        bash nodesource_setup.sh
-        apt-get install -y nodejs
-        node -v
-    elif [ "$package" == "NodeJSLTS" ]; then
-        echo "NodeJSLTS is de huidige LTS versie."
-        curl -fsSL https://deb.nodesource.com/setup_lts.x -o nodesource_setup.sh
-        bash nodesource_setup.sh
-        apt-get install -y nodejs
-        node -v
-    elif [ "$package" == "NodeJSCurrent" ]; then
-        echo "NodeJSCurrent is de huidige versie."
-        curl -fsSL https://deb.nodesource.com/setup_current.x -o nodesource_setup.sh
-        bash nodesource_setup.sh
-        apt-get install -y nodejs
-        node -v
-    else
-        echo "Onbekende versie: $package"
-    fi
+# Stap 1: Invoer voor pakket/afhankelijkheden URL
+pakket_url=$(krijg_invoer "Package lijst" "Vul het package/dependencies URL van het dashboard in:")
+if [ -z "$pakket_url" ]; then
+    toon_fout "Package URL is vereist."
+    clear
+    exit 1
+fi
 
+# Stap 2: Lees pakketten van URL
+pakketten=$(curl -s "$pakket_url")
+if [ -z "$pakketten" ]; then
+    toon_fout "Package lijst kan niet worden gelezen."
+    clear
+    exit 1
+fi
+
+# Stap 3: Installeer pakketten
+echo "$pakketten" | while IFS= read -r package; do
+    toon_voortgang "Bezig met installeren van $package..."
+    installeer_nodejs "$package"
 done
 
-echo "Alle pakketten zijn geïnstalleerd!"
+# Stap 4: Voltooiing
+dialog --title "Voltooid" --msgbox "De installatie van NodeJS versies is voltooid." 8 50  # Toon voltooiingsbericht
+
+clear  # Wis het scherm na voltooiing
