@@ -9,7 +9,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.0                |"
+    echo "| V0.9.5-Buged-Pre-Prod |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
@@ -67,57 +67,36 @@ installeer_pakketten() {
     done
 }
 
-# Functie om NodeJS te installeren (exact overgenomen van de oude nodejs functie)
+# Functie om NodeJS te installeren
 installeer_nodejs() {
     local versie=$1
+    local setup_url=""
+
+    # Stel de setup_url in op basis van de opgegeven versie
     case $versie in
-        NodeJS23)
-            curl -fsSL https://deb.nodesource.com/setup_23.x -o nodesource_setup.sh
-            bash nodesource_setup.sh
-            apt-get install -y nodejs
-            node -v
-            ;;
-        NodeJS22)
-            curl -fsSL https://deb.nodesource.com/setup_22.x -o nodesource_setup.sh
-            bash nodesource_setup.sh
-            apt-get install -y nodejs
-            node -v
-            ;;
-        NodeJS21)
-            curl -fsSL https://deb.nodesource.com/setup_21.x -o nodesource_setup.sh
-            bash nodesource_setup.sh
-            apt-get install -y nodejs
-            node -v
-            ;;
-        NodeJS20)
-            curl -fsSL https://deb.nodesource.com/setup_20.x -o nodesource_setup.sh
-            bash nodesource_setup.sh
-            apt-get install -y nodejs
-            node -v
-            ;;
-        NodeJS18)
-            curl -fsSL https://deb.nodesource.com/setup_18.x -o nodesource_setup.sh
-            bash nodesource_setup.sh
-            apt-get install -y nodejs
-            node -v
-            ;;
-        NodeJSLTS)
-            curl -fsSL https://deb.nodesource.com/setup_lts.x -o nodesource_setup.sh
-            bash nodesource_setup.sh
-            apt-get install -y nodejs
-            node -v
-            ;;
-        NodeJSCurrent)
-            curl -fsSL https://deb.nodesource.com/setup_current.x -o nodesource_setup.sh
-            bash nodesource_setup.sh
-            apt-get install -y nodejs
-            node -v
-            ;;
-        *)
-            toon_fout "Onbekende versie: $versie"
-            ;;
+        NodeJS23) setup_url="https://deb.nodesource.com/setup_23.x" ;;
+        NodeJS22) setup_url="https://deb.nodesource.com/setup_22.x" ;;
+        NodeJS21) setup_url="https://deb.nodesource.com/setup_21.x" ;;
+        NodeJS20) setup_url="https://deb.nodesource.com/setup_20.x" ;;
+        NodeJS18) setup_url="https://deb.nodesource.com/setup_18.x" ;;
+        NodeJSLTS) setup_url="https://deb.nodesource.com/setup_lts.x" ;;
+        NodeJSCurrent) setup_url="https://deb.nodesource.com/setup_current.x" ;;
+        *) toon_fout "Onbekende versie: $versie" && return 1 ;;
     esac
-    sudo rm nodesource_setup.sh  # Verwijder het setup script
+
+    if [ -n "$setup_url" ]; then
+        toon_voortgang "NodeJS $versie wordt geïnstalleerd..."
+        if curl -fsSL "$setup_url" -o nodesource_setup.sh &&
+           sudo bash nodesource_setup.sh &&
+           sudo apt-get install -y nodejs; then
+            installed_version=$(node -v)
+            dialog --title "NodeJS Installatie" --msgbox "NodeJS $versie is succesvol geïnstalleerd. Geïnstalleerde versie: $installed_version" 8 60
+        else
+            toon_fout "Installatie van NodeJS $versie is mislukt."
+            return 1
+        fi
+        sudo rm nodesource_setup.sh  # Verwijder het setup script
+    fi
 }
 
 # Functie om archieven te extraheren met sudo
