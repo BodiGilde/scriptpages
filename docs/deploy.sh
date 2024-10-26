@@ -9,7 +9,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V0.9.5-Buged-Pre-Prod |"
+    echo "| V0.9.51-Buged-Pre-Prod|"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
@@ -85,16 +85,25 @@ installeer_nodejs() {
     esac
 
     if [ -n "$setup_url" ]; then
-        toon_voortgang "NodeJS $versie wordt geïnstalleerd..."
+        dialog --title "NodeJS Installatie" --infobox "Bezig met installeren van ${versie}..." 10 50
+        
+        # Download en voer het setup script uit
         if curl -fsSL "$setup_url" -o nodesource_setup.sh &&
-           sudo bash nodesource_setup.sh &&
-           sudo apt-get install -y nodejs; then
-            installed_version=$(node -v)
-            dialog --title "NodeJS Installatie" --msgbox "NodeJS $versie is succesvol geïnstalleerd. Geïnstalleerde versie: $installed_version" 8 60
+           sudo bash nodesource_setup.sh 2>&1 | dialog --title "NodeJS Setup" --progressbox 20 70; then
+            
+            # Installeer NodeJS
+            if sudo apt-get install -y nodejs 2>&1 | dialog --title "NodeJS Installatie" --progressbox 20 70; then
+                installed_version=$(node -v)
+                dialog --title "NodeJS Installatie" --msgbox "${versie} is succesvol geïnstalleerd. Geïnstalleerde versie: $installed_version" 8 60
+            else
+                dialog --title "NodeJS Installatie" --msgbox "Installatie van ${versie} is mislukt." 8 50
+                return 1
+            fi
         else
-            toon_fout "Installatie van NodeJS $versie is mislukt."
+            dialog --title "NodeJS Setup" --msgbox "Setup van ${versie} is mislukt." 8 50
             return 1
         fi
+        
         sudo rm nodesource_setup.sh  # Verwijder het setup script
     fi
 }
