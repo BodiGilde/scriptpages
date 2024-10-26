@@ -1,1 +1,1 @@
-apache2 php libapache2-mod-php php-cli nodejs20
+apache2 NodeJS20
