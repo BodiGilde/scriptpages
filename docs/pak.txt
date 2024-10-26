@@ -1,1 +1,1 @@
-apache2 NodeJS20
+apache2 NodeJS22
