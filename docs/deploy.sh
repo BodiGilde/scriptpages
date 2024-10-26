@@ -1,5 +1,6 @@
-# Script om eerst packages van een online lijst te installeren en dan een project zip te downloaden en unzippen op uitvoerende locatie.
+# Script om eerst packages van een online lijst te installeren en dan een project zip te downloaden en unzippen op uitvoerende locatie
 # Kan nu alleen standaard Debian repro packages installeren en NodeJS
+# Voor bruikbare nodejs versies zie NodeJS Variants bestand
 
 #!/bin/bash
 # Functie om een splashscreen weer te geven met korte informatie over het script
@@ -7,7 +8,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V0.9.6-Buged-Pre-Prod |"
+    echo "| V0.9.7-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
