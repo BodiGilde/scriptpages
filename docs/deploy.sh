@@ -95,9 +95,9 @@ installeer_nodejs() {
         *) toon_fout "Onbekende versie: $versie" && return 1 ;;
     esac
 
-    curl -fsSL $setup_url -o nodesource_setup.sh
-    bash nodesource_setup.sh
-    apt-get install -y nodejs
+    sudo curl -fsSL $setup_url -o nodesource_setup.sh
+    sudo bash nodesource_setup.sh
+    sudo apt-get install -y nodejs
     node -v
     sudo rm nodesource_setup.sh  # Verwijder het setup script
 }
