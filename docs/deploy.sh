@@ -1,9 +1,7 @@
+# Script om eerst packages van een online lijst te installeren en dan een project zip te downloaden en unzippen op uitvoerende locatie.
+# Kan nu alleen standaard Debian repro packages installeren en NodeJS
+
 #!/bin/bash
-
-# Dit script is een combinatie van old.nodejs.sh en old.deploy.sh
-# Is bedoeld om projecten en de benodigde packages te installeren.
-# Werkt voor nu met default debian repository packages en NodeJS
-
 # Functie om een splashscreen weer te geven met korte informatie over het script
 toon_splashscreen() {
     clear 
@@ -14,6 +12,8 @@ toon_splashscreen() {
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
 }
+
+#Hieronder staan de initialiseer functies die dialog en gebruikersinvoer starten
 
 # Functie om foutmeldingen weer te geven
 toon_fout() {
@@ -30,23 +30,7 @@ toon_voortgang() {
     echo "$1" | dialog --title "Voortgang" --gauge "Even geduld aub..." 8 50 0
 }
 
-# Functie om vereiste pakketten te controleren en te installeren
-controleer_en_installeer_pakketten() {
-    local vereiste_pakketten=""
-    case ${1,,} in
-        *.gz|*.tgz) vereiste_pakketten="tar" ;;
-        *.rar) vereiste_pakketten="unrar" ;;
-        *.7z) vereiste_pakketten="p7zip-full" ;;
-    esac
-    if [ -n "$vereiste_pakketten" ]; then
-        if dialog --title "Pakket Installatie" --yesno "De volgende packages zijn vereist voor het unzippen: $vereiste_pakketten. Wilt u deze installeren?" 8 60; then
-            installeer_pakketten "$vereiste_pakketten"
-        else
-            toon_fout "Vereiste packages zijn niet geïnstalleerd. Kan niet doorgaan met unzippen."
-            exit 1
-        fi
-    fi
-}
+# Hieronder zijn de package installeer functies
 
 # Functie om pakketten te installeren
 installeer_pakketten() {
@@ -108,27 +92,32 @@ installeer_nodejs() {
     fi
 }
 
-# Functie om archieven te extraheren met sudo
-extraheer_archief() {
-    local bestand=$1
-    controleer_en_installeer_pakketten "$bestand"
-    case ${bestand,,} in
-        *.tar.gz|*.tgz) sudo tar -xzvf "$bestand" ;;
-        *.tar) sudo tar -xvf "$bestand" ;;
-        *.gz) sudo gunzip -k "$bestand" ;;
-        *.rar) sudo unrar x "$bestand" ;;
-        *.7z) sudo 7z x "$bestand" ;;
-        *) toon_fout "Niet ondersteund bestandsformaat: ${bestand}" && return 1 ;;
+# Functie om vereiste pakketten te controleren en te installeren
+controleer_en_installeer_pakketten() {
+    local vereiste_pakketten=""
+    case ${1,,} in
+        *.gz|*.tgz) vereiste_pakketten="tar" ;;
+        *.rar) vereiste_pakketten="unrar" ;;
+        *.7z) vereiste_pakketten="p7zip-full" ;;
     esac
-    return $?
+    if [ -n "$vereiste_pakketten" ]; then
+        if dialog --title "Pakket Installatie" --yesno "De volgende packages zijn vereist voor het unzippen: $vereiste_pakketten. Wilt u deze installeren?" 8 60; then
+            installeer_pakketten "$vereiste_pakketten"
+        else
+            toon_fout "Vereiste packages zijn niet geïnstalleerd. Kan niet doorgaan met unzippen."
+            exit 1
+        fi
+    fi
 }
 
-# Functie om project te downloaden en te extraheren
+# Hieronder zijn de project folder download en unzip functies
+
+# Functie om project te downloaden en functie extraheer_archief op te roepen
 download_en_extraheer_project() {
     local invoer=$1
     if [[ "$invoer" =~ ^https?:// ]]; then
         local project_bestandsnaam=$(basename "$invoer")
-        if wget "$invoer" -O "$project_bestandsnaam"; then
+        if curl "$invoer" -O "$project_bestandsnaam"; then
             extraheer_archief "$project_bestandsnaam"
             sudo rm "$project_bestandsnaam"
         else
@@ -145,7 +134,22 @@ download_en_extraheer_project() {
     fi
 }
 
-# Hoofdscript begint hier
+# Functie om archieven te extraheren met sudo
+extraheer_archief() {
+    local bestand=$1
+    controleer_en_installeer_pakketten "$bestand"
+    case ${bestand,,} in
+        *.tar.gz|*.tgz) sudo tar -xzvf "$bestand" ;;
+        *.tar) sudo tar -xvf "$bestand" ;;
+        *.gz) sudo gunzip -k "$bestand" ;;
+        *.rar) sudo unrar x "$bestand" ;;
+        *.7z) sudo 7z x "$bestand" ;;
+        *) toon_fout "Niet ondersteund bestandsformaat: ${bestand}" && return 1 ;;
+    esac
+    return $?
+}
+
+# Hoofdscript begint hier en roept de bovenstaande functies op waar nodig
 toon_splashscreen
 
 # Installeer dialog en curl altijd automatisch
