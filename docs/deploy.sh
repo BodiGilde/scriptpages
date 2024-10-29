@@ -5,10 +5,10 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.4-Pre-Prod       |"
+    echo "| V1.0.5-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
-    sleep 4  # Wacht 4 seconden voordat je verder gaan
+    sleep 4  # Wacht 4 seconden voordat je verder gaat
 }
 
 # Functie om foutmeldingen weer te geven
@@ -73,7 +73,10 @@ installeer_nodejs() {
         NodeJS18) setup_url="https://deb.nodesource.com/setup_18.x" ;;
         NodeJSLTS) setup_url="https://deb.nodesource.com/setup_lts.x" ;;
         NodeJSCurrent) setup_url="https://deb.nodesource.com/setup_current.x" ;;
-        *) toon_fout "Onbekende versie: $versie" && return 1 ;;
+        *) 
+            toon_fout "Onbekende versie: $versie"
+            return 1 
+        ;;
     esac
 
     if [ -n "$setup_url" ]; then
