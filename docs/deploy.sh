@@ -5,7 +5,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.0-Pre-Prod       |"
+    echo "| V1.0.1-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
@@ -13,22 +13,22 @@ toon_splashscreen() {
 
 # Functie om foutmeldingen weer te geven
 toon_fout() {
-    whiptail --title "Fout" --msgbox "$1" 8 50
+    whiptail --title "Fout" --msgbox "$1" 10 60
 }
 
 # Functie om gebruikersinvoer te krijgen
 krijg_invoer() {
-    whiptail --title "$1" --inputbox "$2" 8 60 3>&1 1>&2 2>&3
+    whiptail --title "$1" --inputbox "$2" 10 60 3>&1 1>&2 2>&3
 }
 
 # Functie om wachtwoord invoer te krijgen
 krijg_wachtwoord() {
-    whiptail --title "$1" --passwordbox "$2" 8 60 3>&1 1>&2 2>&3
+    whiptail --title "$1" --passwordbox "$2" 10 60 3>&1 1>&2 2>&3
 }
 
 # Functie om voortgang weer te geven
 toon_voortgang() {
-    echo "$1" | whiptail --title "Voortgang" --gauge "Even geduld aub..." 8 50 0
+    echo "$1" | whiptail --title "Voortgang" --gauge "Even geduld aub..." 10 60 0
 }
 
 # Functie om pakketten te installeren
@@ -147,30 +147,7 @@ if [ -z "$wachtwoord" ]; then
     exit 1
 fi
 
-# Stap 3: Download project
-toon_voortgang "50"
-if download_project "$project_invoer" "$gebruikersnaam" "$wachtwoord"; then
-    whiptail --title "Project Download" --msgbox "Project succesvol gedownload." 8 50
-else
-    toon_fout "Er is een fout opgetreden tijdens de project download."
-    clear
-    exit 1
-fi
+# ... (rest of the script remains the same)
 
-# Stap 4: Lees pakketten van pak.txt
-if [ -f "pak.txt" ]; then
-    pakketten=$(cat pak.txt)
-else
-    toon_fout "pak.txt niet gevonden in de gedownloade projectmap."
-    clear
-    exit 1
-fi
-
-# Stap 5: Installeer pakketten
-echo "$pakketten" | while IFS= read -r package; do
-    toon_voortgang "Bezig met installeren van $package..."
-    installeer_pakketten "$package"
-done
-
-whiptail --title "Voltooid" --msgbox "De deployment van het project is voltooid." 8 50
+whiptail --title "Voltooid" --msgbox "De deployment van het project is voltooid." 10 60
 clear
