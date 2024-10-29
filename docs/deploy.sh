@@ -1,10 +1,11 @@
 #!/bin/bash
+
 # Functie om een splashscreen weer te geven met korte informatie over het script
 toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V0.9.8-Pre-Prod       |"
+    echo "| V0.9.9-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
@@ -17,7 +18,12 @@ toon_fout() {
 
 # Functie om gebruikersinvoer te krijgen
 krijg_invoer() {
-    dialog --title "$1" --inputbox "$2" 8 60 3>&1 1>&2 2>&3
+    dialog --title "$1" --inputbox "$2" 8 60 --insecure 3>&1 1>&2 2>&3
+}
+
+# Functie om wachtwoord invoer te krijgen
+krijg_wachtwoord() {
+    dialog --title "$1" --passwordbox "$2" 8 60 --insecure 3>&1 1>&2 2>&3
 }
 
 # Functie om voortgang weer te geven
@@ -88,7 +94,11 @@ download_project() {
     local gebruikersnaam=$2
     local wachtwoord=$3
     if [[ "$invoer" =~ ^https?:// ]]; then
-        if git clone "https://$gebruikersnaam:$wachtwoord@$invoer"; then
+        # Verwijder eventuele bestaande gebruikersnaam en wachtwoord uit de URL
+        invoer=$(echo "$invoer" | sed -E 's/^(https?:\/\/).*@/\1/')
+        # Voeg de nieuwe gebruikersnaam en wachtwoord toe
+        repo_url="https://$gebruikersnaam:$wachtwoord@${invoer#https://}"
+        if git clone "$repo_url" 2>&1 | dialog --title "Project Download" --progressbox 20 70; then
             dialog --title "Project Download" --msgbox "Project succesvol gedownload." 8 50
         else
             toon_fout "Downloaden van het project mislukt."
@@ -130,7 +140,7 @@ if [ -z "$gebruikersnaam" ]; then
     exit 1
 fi
 
-wachtwoord=$(krijg_invoer "Wachtwoord" "Voer uw wachtwoord in voor de private repository:")
+wachtwoord=$(krijg_wachtwoord "Wachtwoord" "Voer uw wachtwoord in voor de private repository:")
 if [ -z "$wachtwoord" ]; then
     toon_fout "Wachtwoord is vereist."
     clear
