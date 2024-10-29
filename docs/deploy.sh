@@ -5,7 +5,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.1-Pre-Prod       |"
+    echo "| V1.0.2-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
@@ -18,12 +18,29 @@ toon_fout() {
 
 # Functie om gebruikersinvoer te krijgen
 krijg_invoer() {
-    whiptail --title "$1" --inputbox "$2" 10 60 3>&1 1>&2 2>&3
+    local title="$1"
+    local prompt="$2"
+    local input=""
+    
+    whiptail --title "$title" --inputbox "$prompt" 10 60 3>&1 1>&2 2>&3
+    if [ $? -ne 0 ]; then
+        echo ""
+        return 1
+    fi
 }
 
 # Functie om wachtwoord invoer te krijgen
 krijg_wachtwoord() {
-    whiptail --title "$1" --passwordbox "$2" 10 60 3>&1 1>&2 2>&3
+    local title="$1"
+    local prompt="$2"
+    local password=""
+    
+    password=$(whiptail --title "$title" --passwordbox "$prompt" 10 60 3>&1 1>&2 2>&3)
+    if [ $? -ne 0 ]; then
+        echo ""
+        return 1
+    fi
+    echo "$password"
 }
 
 # Functie om voortgang weer te geven
