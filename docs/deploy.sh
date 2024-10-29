@@ -5,7 +5,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.2-Pre-Prod       |"
+    echo "| V1.0.3-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
@@ -13,39 +13,32 @@ toon_splashscreen() {
 
 # Functie om foutmeldingen weer te geven
 toon_fout() {
-    whiptail --title "Fout" --msgbox "$1" 10 60
+    echo "Fout: $1"
+    echo "Druk op Enter om door te gaan..."
+    read
 }
 
 # Functie om gebruikersinvoer te krijgen
 krijg_invoer() {
-    local title="$1"
-    local prompt="$2"
+    local prompt="$1"
     local input=""
-    
-    whiptail --title "$title" --inputbox "$prompt" 10 60 3>&1 1>&2 2>&3
-    if [ $? -ne 0 ]; then
-        echo ""
-        return 1
-    fi
+    echo "$prompt"
+    read -r input
+    echo "$input"
 }
 
 # Functie om wachtwoord invoer te krijgen
 krijg_wachtwoord() {
-    local title="$1"
-    local prompt="$2"
+    local prompt="$1"
     local password=""
-    
-    password=$(whiptail --title "$title" --passwordbox "$prompt" 10 60 3>&1 1>&2 2>&3)
-    if [ $? -ne 0 ]; then
-        echo ""
-        return 1
-    fi
+    echo "$prompt"
+    read -s password
     echo "$password"
 }
 
 # Functie om voortgang weer te geven
 toon_voortgang() {
-    echo "$1" | whiptail --title "Voortgang" --gauge "Even geduld aub..." 10 60 0
+    echo "Voortgang: $1"
 }
 
 # Functie om pakketten te installeren
@@ -55,14 +48,14 @@ installeer_pakketten() {
         if [[ "$pakket" == NodeJS* ]]; then
             installeer_nodejs "$pakket"
         elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
-            whiptail --title "Pakket Installatie" --infobox "Bezig met installeren van ${pakket}..." 10 50
-            if sudo apt-get install -y "$pakket" 2>&1 | whiptail --title "Pakket Installatie" --progressbox 20 70; then
-                whiptail --title "Pakket Installatie" --msgbox "${pakket} succesvol geïnstalleerd." 8 50
+            echo "Bezig met installeren van ${pakket}..."
+            if sudo apt-get install -y "$pakket"; then
+                echo "${pakket} succesvol geïnstalleerd."
             else
-                whiptail --title "Pakket Installatie" --msgbox "Installatie van ${pakket} mislukt." 8 50
+                echo "Installatie van ${pakket} mislukt."
             fi
         else
-            whiptail --title "Pakket Installatie" --msgbox "${pakket} is al geïnstalleerd." 8 50
+            echo "${pakket} is al geïnstalleerd."
         fi
     done
 }
@@ -84,20 +77,15 @@ installeer_nodejs() {
     esac
 
     if [ -n "$setup_url" ]; then
-        whiptail --title "NodeJS Installatie" --infobox "Bezig met installeren van ${versie}..." 10 50
+        echo "Bezig met installeren van ${versie}..."
         
         if curl -fsSL "$setup_url" -o nodesource_setup.sh &&
-           sudo bash nodesource_setup.sh 2>&1 | whiptail --title "NodeJS Setup" --progressbox 20 70; then
-            
-            if sudo apt-get install -y nodejs 2>&1 | whiptail --title "NodeJS Installatie" --progressbox 20 70; then
-                installed_version=$(node -v)
-                whiptail --title "NodeJS Installatie" --msgbox "${versie} is succesvol geïnstalleerd. Geïnstalleerde versie: $installed_version" 8 60
-            else
-                whiptail --title "NodeJS Installatie" --msgbox "Installatie van ${versie} is mislukt." 8 50
-                return 1
-            fi
+           sudo bash nodesource_setup.sh &&
+           sudo apt-get install -y nodejs; then
+            installed_version=$(node -v)
+            echo "${versie} is succesvol geïnstalleerd. Geïnstalleerde versie: $installed_version"
         else
-            whiptail --title "NodeJS Setup" --msgbox "Setup van ${versie} is mislukt." 8 50
+            echo "Installatie van ${versie} is mislukt."
             return 1
         fi
         
@@ -115,8 +103,8 @@ download_project() {
         invoer=$(echo "$invoer" | sed -E 's/^(https?:\/\/).*@/\1/')
         # Voeg de nieuwe gebruikersnaam en wachtwoord toe
         repo_url="https://$gebruikersnaam:$(printf '%s' "$wachtwoord" | jq -sRr @uri)@${invoer#https://}"
-        if GIT_ASKPASS="echo $wachtwoord" git clone "$repo_url" 2>&1 | whiptail --title "Project Download" --progressbox 20 70; then
-            whiptail --title "Project Download" --msgbox "Project succesvol gedownload." 8 50
+        if GIT_ASKPASS="echo $wachtwoord" git clone "$repo_url"; then
+            echo "Project succesvol gedownload."
         else
             toon_fout "Downloaden van het project mislukt."
             return 1
@@ -132,39 +120,59 @@ download_project() {
 # Hoofdscript begint hier en roept de bovenstaande functies op waar nodig
 toon_splashscreen
 
-# Installeer whiptail, curl, git en jq altijd automatisch
-echo "Vereiste packages whiptail, curl, git en jq worden geïnstalleerd..."
-if sudo apt-get update && sudo apt-get install -y whiptail curl git jq; then
-    echo "Whiptail, curl, git en jq zijn succesvol geïnstalleerd."
+# Installeer curl, git en jq altijd automatisch
+echo "Vereiste packages curl, git en jq worden geïnstalleerd..."
+if sudo apt-get update && sudo apt-get install -y curl git jq; then
+    echo "Curl, git en jq zijn succesvol geïnstalleerd."
 else
-    echo "Installatie van whiptail, curl, git of jq mislukt. Script wordt beëindigd."
+    echo "Installatie van curl, git of jq mislukt. Script wordt beëindigd."
     exit 1
 fi
 
 # Stap 1: Invoer voor projectarchief of map
-project_invoer=$(krijg_invoer "Project Invoer" "Voer projectarchief URL of lokaal pad in:")
+project_invoer=$(krijg_invoer "Voer projectarchief URL of lokaal pad in:")
 if [ -z "$project_invoer" ]; then
     toon_fout "Project invoer is vereist."
-    clear
     exit 1
 fi
 
 # Stap 2: Invoer voor gebruikersnaam en wachtwoord voor private repositories
-gebruikersnaam=$(krijg_invoer "Gebruikersnaam" "Voer uw gebruikersnaam in voor de private repository:")
+gebruikersnaam=$(krijg_invoer "Voer uw gebruikersnaam in voor de private repository:")
 if [ -z "$gebruikersnaam" ]; then
     toon_fout "Gebruikersnaam is vereist."
-    clear
     exit 1
 fi
 
-wachtwoord=$(krijg_wachtwoord "Wachtwoord" "Voer uw wachtwoord in voor de private repository:")
+wachtwoord=$(krijg_wachtwoord "Voer uw wachtwoord in voor de private repository:")
 if [ -z "$wachtwoord" ]; then
     toon_fout "Wachtwoord is vereist."
-    clear
     exit 1
 fi
 
-# ... (rest of the script remains the same)
+# Stap 3: Download project
+toon_voortgang "Project wordt gedownload..."
+if download_project "$project_invoer" "$gebruikersnaam" "$wachtwoord"; then
+    echo "Project succesvol gedownload."
+else
+    toon_fout "Er is een fout opgetreden tijdens de project download."
+    exit 1
+fi
 
-whiptail --title "Voltooid" --msgbox "De deployment van het project is voltooid." 10 60
+# Stap 4: Lees pakketten van pak.txt
+if [ -f "pak.txt" ]; then
+    pakketten=$(cat pak.txt)
+else
+    toon_fout "pak.txt niet gevonden in de gedownloade projectmap."
+    exit 1
+fi
+
+# Stap 5: Installeer pakketten
+echo "$pakketten" | while IFS= read -r package; do
+    toon_voortgang "Bezig met installeren van $package..."
+    installeer_pakketten "$package"
+done
+
+echo "De deployment van het project is voltooid."
+echo "Druk op Enter om af te sluiten..."
+read
 clear
