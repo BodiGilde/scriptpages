@@ -5,10 +5,10 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.3-Pre-Prod       |"
+    echo "| V1.0.4-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
-    sleep 4  # Wacht 4 seconden voordat je verder gaat
+    sleep 4  # Wacht 4 seconden voordat je verder gaan
 }
 
 # Functie om foutmeldingen weer te geven
