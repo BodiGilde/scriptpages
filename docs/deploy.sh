@@ -5,7 +5,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.6-Pre-Prod       |"
+    echo "| V1.0.7-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
