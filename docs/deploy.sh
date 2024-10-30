@@ -171,7 +171,7 @@ cd ..
 if [[ "$del_after_finished" == "true" ]]; then
     sudo rm -f deploy.sh
 else
-    continue
+
 fi
 
 echo "Installatie voltooid!"
