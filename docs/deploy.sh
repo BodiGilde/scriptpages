@@ -1,7 +1,10 @@
 #!/bin/bash
 
-# Optie om de NodeJS functie uit te zetten, voor debug en presentatie
+# Optie om NodeJS functie te bypassen, voor debug en presentatie
 nodejs_bypass_switch=true
+
+# Optie om deploy.sh niet te verwijderen, nadat deze is voltooid.
+del_after_finished=false
 
 # Functie om een splashscreen weer te geven
 toon_splashscreen() {
@@ -26,7 +29,7 @@ installeer_pakketten() {
     #above for nodejs_switch
         echo "Verwerken pakket: $pakket"
         #if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
-        if [[ "$pakket" == NodeJS* && "$nodejs_switch" == "false" ]]; then
+        if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "false" ]]; then
             installeer_nodejs "$pakket"
         elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
             echo "Bezig met installeren van ${pakket}..."
@@ -161,8 +164,13 @@ else
     echo "pak.txt niet gevonden"
 fi
 
-# Verwijder het deploy script
+# Ga terug naar vorige folder
 cd ..
-sudo rm -f deploy.sh
+# Verwijder het deploy script
+if [[ "$del_after_finished" == "true" ]]; then
+    sudo rm -f deploy.sh
+elif
+    continue
+fi
 
 echo "Installatie voltooid!"
