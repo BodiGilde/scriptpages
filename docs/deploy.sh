@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Optie om de NodeJS functie uit te zetten, voor debug en presentatie
+nodejs_switch=false
+
 # Functie om een splashscreen weer te geven
 toon_splashscreen() {
     clear 
@@ -16,7 +19,8 @@ installeer_pakketten() {
     local pakketten=($1)
     for pakket in "${pakketten[@]}"; do
         echo "Verwerken pakket: $pakket"
-        if [[ "$pakket" == NodeJS* ]]; then
+		#if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
+        if [[ "$pakket" == NodeJS* && "$nodejs_switch" == "true" ]]; then
             installeer_nodejs "$pakket"
         elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
             echo "Bezig met installeren van ${pakket}..."
