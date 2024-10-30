@@ -171,8 +171,7 @@ cd ..
 # Verwijder het deploy script
 if [[ "$del_after_finished" == "true" ]]; then
     sudo rm -f deploy.sh
+    echo "Installatie voltooid!"
 else
-    # is opzettelijk leeg
+    echo "Installatie voltooid!"
 fi
-
-echo "Installatie voltooid!"
