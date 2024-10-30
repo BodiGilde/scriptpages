@@ -49,21 +49,19 @@ installeer_nodejs() {
 
 # Functie om pakketten te installeren
 installeer_pakketten() {
-    local pakketten=($1)
-    for pakket in "${pakketten[@]}"; do
-        if [[ "$pakket" == NodeJS* ]]; then
-            installeer_nodejs "$pakket"
-        elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
-            echo "Bezig met installeren van ${pakket}..."
-            if sudo apt-get install -y "$pakket"; then
-                echo "${pakket} succesvol geïnstalleerd."
-            else
-                echo "Installatie van ${pakket} mislukt."
-            fi
+    local pakket=$1
+    if [[ "$pakket" == NodeJS* ]]; then
+        installeer_nodejs "$pakket"
+    elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
+        echo "Bezig met installeren van ${pakket}..."
+        if sudo apt-get install -y "$pakket"; then
+            echo "${pakket} succesvol geïnstalleerd."
         else
-            echo "${pakket} is al geïnstalleerd."
+            echo "Installatie van ${pakket} mislukt."
         fi
-    done
+    else
+        echo "${pakket} is al geïnstalleerd."
+    fi
 }
 
 # Start van het hoofdscript
@@ -112,11 +110,10 @@ esac
 # Installeer pakketten uit pak.txt als het bestaat
 if [ -f "pak.txt" ]; then
     echo "Installeren van pakketten uit pak.txt..."
-    pakketten=$(cat pak.txt)
-    echo "$pakketten" | while IFS= read -r package; do
+    while IFS= read -r package; do
         echo "Bezig met installeren van $package..."
         installeer_pakketten "$package"
-    done
+    done < pak.txt
 else
     echo "pak.txt niet gevonden"
 fi
