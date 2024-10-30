@@ -126,6 +126,8 @@ toon_splashscreen
 
 # Installeer benodigde packages
 echo "Vereiste packages worden geïnstalleerd"
+# Date is nodig voor sommige glitches in een VM
+date
 sudo apt-get install curl git -y
 
 echo "Kies een optie voor Git repository clone:"
