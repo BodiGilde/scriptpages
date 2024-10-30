@@ -111,27 +111,33 @@ clone_github_userpass() {
     fi
 }
 
-# Functie om een .tar-bestand te downloaden en uit te pakken
-download_and_extract_tar() {
-    read -p "Voer de URL in van het .tar-bestand (formaat: http://example.com/path/to/file.tar): " tar_url
+# Functie om een .tar.gz-bestand te downloaden en uit te pakken
+download_and_extract_tar_gz() {
+    read -p "Voer de URL in van het .tar.gz-bestand (formaat: http://example.com/path/to/file.tar.gz): " tar_url
     
-    # Haal de naam van het .tar-bestand uit de URL
-    tar_name=$(basename "$tar_url" .tar)
+    # Haal de naam van het .tar.gz-bestand uit de URL
+    tar_name=$(basename "$tar_url" .tar.gz)
     
-    # Download het .tar-bestand
+    # Download het .tar.gz-bestand
     if curl -O "$tar_url"; then
-        echo "$tar_name.tar gedownload."
-        # Unzip het .tar-bestand
-        if tar -xvf "$tar_name.tar"; then
-            echo "$tar_name.tar uitgepakt."
-            rm "$tar_name.tar"  # Verwijder het .tar-bestand
-            cd "$tar_name"
+        echo "$tar_name.tar.gz gedownload."
+        # Controleer of het bestand een geldig .tar.gz-archief is
+        if file "$tar_name.tar.gz" | grep -q 'gzip compressed data'; then
+            # Unzip het .tar.gz-bestand
+            if tar -xzvf "$tar_name.tar.gz"; then
+                echo "$tar_name.tar.gz uitgepakt."
+                rm "$tar_name.tar.gz"  # Verwijder het .tar.gz-bestand
+                cd "$tar_name"
+            else
+                echo "Uitpakken van $tar_name.tar.gz mislukt."
+                exit 1
+            fi
         else
-            echo "Uitpakken van $tar_name.tar mislukt."
+            echo "Het gedownloade bestand is geen geldig .tar.gz-archief."
             exit 1
         fi
     else
-        echo "Downloaden van $tar_name.tar mislukt."
+        echo "Downloaden van $tar_name.tar.gz mislukt."
         exit 1
     fi
 }
@@ -146,7 +152,7 @@ sudo apt-get install curl cat git -y
 echo "Kies een optie voor Git repository clone:"
 echo "1. Clone met Personal Access Token (GitHub)"
 echo "2. Clone met gebruikersnaam/wachtwoord (GitHub)"
-echo "3. Download en unzip .tar-bestand"
+echo "3. Download en unzip .tar.gz-bestand"
 read -p "Keuze (1/2/3): " keuze
 
 case $keuze in
@@ -157,7 +163,7 @@ case $keuze in
         clone_github_userpass
         ;;
     3)
-        download_and_extract_tar
+        download_and_extract_tar_gz
         ;;
     *)
         echo "Ongeldige keuze"
