@@ -111,49 +111,17 @@ clone_github_userpass() {
     fi
 }
 
-# Functie om een .zip-bestand te downloaden en uit te pakken met bsdtar
-download_and_extract_zip() {
-    read -p "Voer de URL in van het .zip-bestand (formaat: http://example.com/path/to/file.zip): " zip_url
-    
-    # Haal de naam van het .zip-bestand uit de URL
-    zip_name=$(basename "$zip_url" .zip)
-    
-    # Download het .zip-bestand
-    if curl -O "$zip_url"; then
-        echo "$zip_name.zip gedownload."
-        # Controleer of het bestand een geldig .zip-archief is
-        if file "$zip_name.zip" | grep -q 'Zip archive data'; then
-            # Unzip het .zip-bestand met bsdtar
-            if bsdtar -xf "$zip_name.zip"; then
-                echo "$zip_name.zip uitgepakt."
-                rm "$zip_name.zip"  # Verwijder het .zip-bestand
-                cd "$zip_name"
-            else
-                echo "Uitpakken van $zip_name.zip mislukt."
-                exit 1
-            fi
-        else
-            echo "Het gedownloade bestand is geen geldig .zip-archief."
-            exit 1
-        fi
-    else
-        echo "Downloaden van $zip_name.zip mislukt."
-        exit 1
-    fi
-}
-
 # Start van het hoofdscript
 toon_splashscreen
 
 # Installeer benodigde packages
 echo "Vereiste packages worden geïnstalleerd"
-sudo apt-get install curl cat git bsdtar -y
+sudo apt-get install curl cat git -y
 
 echo "Kies een optie voor Git repository clone:"
 echo "1. Clone met Personal Access Token (GitHub)"
 echo "2. Clone met gebruikersnaam/wachtwoord (GitHub)"
-echo "3. Download en unzip .zip-bestand"
-read -p "Keuze (1/2/3): " keuze
+read -p "Keuze (1/2): " keuze
 
 case $keuze in
     1)
@@ -161,9 +129,6 @@ case $keuze in
         ;;
     2)
         clone_github_userpass
-        ;;
-    3)
-        download_and_extract_zip
         ;;
     *)
         echo "Ongeldige keuze"
