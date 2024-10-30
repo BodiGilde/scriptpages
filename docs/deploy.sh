@@ -4,15 +4,15 @@
 nodejs_bypass_switch=true
 
 # Optie om deploy.sh niet te verwijderen, nadat deze is voltooid | true = verwijder script | false = bewaar script
-del_after_finished=false
+del_after_finished=true
 
 # Functie om splashscreen weer te geven met script info
 toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.7-Git-Pre-Prod   |"
-    echo "| B.P                   |"
+    echo "| V1.1.0-Git-Almost-Prod|"
+    echo "| B.P 2024              |"
     echo "X+++++++++++++++++++++++X"
     sleep 2
 }
@@ -137,6 +137,7 @@ echo "Vereiste packages worden geïnstalleerd"
 date #Voor VM tijd glitch (zorgt ervoor dat debian package repository niet werkt door de fout: "Release file is not yet valid")
 sudo apt-get update
 sudo apt-get install curl git -y
+sleep 3 #geef leestijd van de output die is gedaan
 clear #zodat de output voor het volgende keuzemenu er beter uitziet
 
 echo "Kies een optie voor Git repository clone:"
