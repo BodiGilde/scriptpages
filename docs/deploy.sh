@@ -11,36 +11,6 @@ toon_splashscreen() {
     sleep 4  # Wacht 4 seconden voordat je verder gaat
 }
 
-# Functie om foutmeldingen weer te geven
-toon_fout() {
-    echo "Fout: $1"
-    echo "Druk op Enter om door te gaan..."
-    read
-}
-
-# Functie om gebruikersinvoer te krijgen
-krijg_invoer() {
-    local prompt="$1"
-    local input=""
-    echo "$prompt"
-    read -r input
-    echo "$input"
-}
-
-# Functie om wachtwoord invoer te krijgen
-krijg_wachtwoord() {
-    local prompt="$1"
-    local password=""
-    echo "$prompt"
-    read -s password
-    echo "$password"
-}
-
-# Functie om voortgang weer te geven
-toon_voortgang() {
-    echo "Voortgang: $1"
-}
-
 # Functie om pakketten te installeren
 installeer_pakketten() {
     local pakketten=($1)
@@ -74,7 +44,7 @@ installeer_nodejs() {
         NodeJSLTS) setup_url="https://deb.nodesource.com/setup_lts.x" ;;
         NodeJSCurrent) setup_url="https://deb.nodesource.com/setup_current.x" ;;
         *) 
-            toon_fout "Onbekende versie: $versie"
+            echo "Onbekende versie: $versie"
             return 1 
         ;;
     esac
@@ -96,86 +66,61 @@ installeer_nodejs() {
     fi
 }
 
-# Functie om project te downloaden met git clone
-download_project() {
-    local invoer=$1
-    local gebruikersnaam=$2
-    local wachtwoord=$3
-    if [[ "$invoer" =~ ^https?:// ]]; then
-        # Verwijder eventuele bestaande gebruikersnaam en wachtwoord uit de URL
-        invoer=$(echo "$invoer" | sed -E 's/^(https?:\/\/).*@/\1/')
-        # Voeg de nieuwe gebruikersnaam en wachtwoord toe
-        repo_url="https://$gebruikersnaam:$(printf '%s' "$wachtwoord" | jq -sRr @uri)@${invoer#https://}"
-        if GIT_ASKPASS="echo $wachtwoord" git clone "$repo_url"; then
-            echo "Project succesvol gedownload."
-        else
-            toon_fout "Downloaden van het project mislukt."
-            return 1
-        fi
-    elif [ -d "$invoer" ]; then
-        cp -r "$invoer"/* .
+# Functie om een privé GitHub-repository te klonen
+kloon_repository() {
+    local repo_url
+    local repo_naam
+    local gebruikersnaam
+    local wachtwoord
+
+    echo "Voer de URL van de GitHub-repository in (of plak deze):"
+    read -r repo_url
+
+    repo_naam=$(basename -s .git "$repo_url")
+
+    echo "Voer je GitHub-gebruikersnaam in:"
+    read -r gebruikersnaam
+
+    echo "Voer je GitHub-wachtwoord of personal access token in:"
+    read -rs wachtwoord
+    echo
+
+    if git clone "https://${gebruikersnaam}:${wachtwoord}@${repo_url#https://}" "$repo_naam"; then
+        echo "Repository succesvol gekloond naar $repo_naam"
+        cd "$repo_naam" || exit
     else
-        toon_fout "Ongeldig bestand of directory locatie: $invoer"
-        return 1
+        echo "Klonen van de repository is mislukt."
+        exit 1
     fi
 }
 
-# Hoofdscript begint hier en roept de bovenstaande functies op waar nodig
-toon_splashscreen
+# Functie om pakketten uit pak.txt te installeren
+installeer_pakketten_uit_bestand() {
+    if [ -f "pak.txt" ]; then
+        echo "Installeren van pakketten uit pak.txt..."
+        mapfile -t pakketten < pak.txt
+        installeer_pakketten "${pakketten[*]}"
+    else
+        echo "pak.txt niet gevonden in de repository."
+    fi
+}
 
-# Installeer curl, git en jq altijd automatisch
-echo "Vereiste packages curl, git en jq worden geïnstalleerd..."
-if sudo apt-get update && sudo apt-get install -y curl git jq; then
-    echo "Curl, git en jq zijn succesvol geïnstalleerd."
-else
-    echo "Installatie van curl, git of jq mislukt. Script wordt beëindigd."
-    exit 1
-fi
+# Hoofdscript
+main() {
+    toon_splashscreen
 
-# Stap 1: Invoer voor projectarchief of map
-project_invoer=$(krijg_invoer "Voer projectarchief URL of lokaal pad in:")
-if [ -z "$project_invoer" ]; then
-    toon_fout "Project invoer is vereist."
-    exit 1
-fi
+    # Controleer of git is geïnstalleerd
+    if ! command -v git &> /dev/null; then
+        echo "Git is niet geïnstalleerd. Installeren..."
+        sudo apt-get update
+        sudo apt-get install -y git
+    fi
 
-# Stap 2: Invoer voor gebruikersnaam en wachtwoord voor private repositories
-gebruikersnaam=$(krijg_invoer "Voer uw gebruikersnaam in voor de private repository:")
-if [ -z "$gebruikersnaam" ]; then
-    toon_fout "Gebruikersnaam is vereist."
-    exit 1
-fi
+    kloon_repository
+    installeer_pakketten_uit_bestand
 
-wachtwoord=$(krijg_wachtwoord "Voer uw wachtwoord in voor de private repository:")
-if [ -z "$wachtwoord" ]; then
-    toon_fout "Wachtwoord is vereist."
-    exit 1
-fi
+    echo "Script voltooid."
+}
 
-# Stap 3: Download project
-toon_voortgang "Project wordt gedownload..."
-if download_project "$project_invoer" "$gebruikersnaam" "$wachtwoord"; then
-    echo "Project succesvol gedownload."
-else
-    toon_fout "Er is een fout opgetreden tijdens de project download."
-    exit 1
-fi
-
-# Stap 4: Lees pakketten van pak.txt
-if [ -f "pak.txt" ]; then
-    pakketten=$(cat pak.txt)
-else
-    toon_fout "pak.txt niet gevonden in de gedownloade projectmap."
-    exit 1
-fi
-
-# Stap 5: Installeer pakketten
-echo "$pakketten" | while IFS= read -r package; do
-    toon_voortgang "Bezig met installeren van $package..."
-    installeer_pakketten "$package"
-done
-
-echo "De deployment van het project is voltooid."
-echo "Druk op Enter om af te sluiten..."
-read
-clear
+# Voer het hoofdscript uit
+main
