@@ -50,20 +50,33 @@ installeer_nodejs() {
     if [ -n "$setup_url" ]; then
         echo "Bezig met installeren van ${versie}..."
         
+        # Controleer of curl is geïnstalleerd
+        if ! dpkg -s curl >/dev/null 2>&1; then
+            echo "curl is niet geïnstalleerd. Installeren van curl..."
+            if ! sudo apt-get install -y curl; then
+                echo "Installatie van curl mislukt."
+                return 1
+            fi
+        fi
+
         # Download en voer het setup script uit
-        if curl -fsSL "$setup_url" -o nodesource_setup.sh &&
-           sudo bash nodesource_setup.sh; then
-            
-            # Installeer NodeJS
-            if sudo apt-get install -y nodejs; then
-                installed_version=$(node -v)
-                echo "${versie} is succesvol geïnstalleerd. Geïnstalleerde versie: $installed_version"
+        if curl -fsSL "$setup_url" -o nodesource_setup.sh; then
+            echo "Setup script gedownload."
+            if sudo bash nodesource_setup.sh; then
+                echo "Setup script uitgevoerd."
+                if sudo apt-get install -y nodejs; then
+                    installed_version=$(node -v)
+                    echo "${versie} is succesvol geïnstalleerd. Geïnstalleerde versie: $installed_version"
+                else
+                    echo "Installatie van nodejs mislukt."
+                    return 1
+                fi
             else
-                echo "Installatie van ${versie} is mislukt."
+                echo "Uitvoeren van setup script mislukt."
                 return 1
             fi
         else
-            echo "Setup van ${versie} is mislukt."
+            echo "Downloaden van setup script mislukt."
             return 1
         fi
         
@@ -117,6 +130,9 @@ case $keuze in
         ;;
 esac
 
+# Update pakketbeheerder
+sudo apt-get update
+
 # Installeer pakketten uit pak.txt als het bestaat
 if [ -f "pak.txt" ]; then
     echo "Installeren van pakketten uit pak.txt..."
@@ -128,6 +144,6 @@ fi
 
 # Verwijder het deploy script
 cd ..
-rm -f deploy.sh
+sudo rm -f deploy.sh
 
 echo "Installatie voltooid!"
