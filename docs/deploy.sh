@@ -5,7 +5,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.3.0-Pre-Prod       |"
+    echo "| V1.4.0-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
@@ -69,25 +69,45 @@ installeer_nodejs() {
 # Functie om gebruikersinvoer te vragen met een timeout
 vraag_input() {
     local prompt=$1
-    local var_name=$2
-    local default_value=$3
+    local default_value=$2
     local timeout=60
+    local input=""
+    local timer=0
 
     echo "$prompt"
-    echo "Je hebt $timeout seconden om te antwoorden. Druk op Enter om de standaardwaarde te gebruiken."
-    read -t $timeout -p "Invoer (standaard: $default_value): " input
+    echo "Je hebt $timeout seconden om te antwoorden."
+    echo "Druk op Enter om de standaardwaarde te gebruiken: $default_value"
+    
+    # Start een achtergrondproces om de timer bij te houden
+    (
+        while [ $timer -lt $timeout ]; do
+            sleep 1
+            ((timer++))
+            echo -ne "\rResterend: $(($timeout-$timer)) seconden...   \r"
+        done
+        echo -e "\nTimeout bereikt."
+    ) &
+    timer_pid=$!
 
-    if [ $? -eq 0 ]; then
+    # Lees gebruikersinvoer
+    read -t $timeout input
+    read_status=$?
+
+    # Stop de timer
+    kill $timer_pid 2>/dev/null
+    wait $timer_pid 2>/dev/null
+
+    if [ $read_status -eq 0 ]; then
         if [ -z "$input" ]; then
-            eval $var_name="'$default_value'"
-            echo "Standaardwaarde gebruikt: $default_value"
+            echo "Standaardwaarde wordt gebruikt: $default_value"
+            echo "$default_value"
         else
-            eval $var_name="'$input'"
             echo "Ingevoerde waarde: $input"
+            echo "$input"
         fi
     else
         echo "Timeout. Standaardwaarde wordt gebruikt: $default_value"
-        eval $var_name="'$default_value'"
+        echo "$default_value"
     fi
 }
 
@@ -98,28 +118,38 @@ kloon_repository() {
     local gebruikersnaam
     local wachtwoord
 
-    vraag_input "Voer de URL van de GitHub-repository in (of plak deze):" repo_url "https://github.com/gebruiker/repo.git"
+    # Vraag om repository URL
+    repo_url=$(vraag_input "Voer de URL van de GitHub-repository in (of plak deze):" "https://github.com/gebruiker/repo.git")
     repo_naam=$(basename -s .git "$repo_url")
 
-    vraag_input "Voer je GitHub-gebruikersnaam in:" gebruikersnaam "standaard_gebruiker"
+    # Vraag om gebruikersnaam
+    gebruikersnaam=$(vraag_input "Voer je GitHub-gebruikersnaam in:" "standaard_gebruiker")
 
+    # Vraag om wachtwoord
     echo "Voer je GitHub-wachtwoord of personal access token in:"
-    echo "Je hebt 60 seconden om te antwoorden. Druk op Enter om een leeg wachtwoord te gebruiken."
+    echo "Je hebt 60 seconden om te antwoorden."
     read -s -t 60 wachtwoord
-    if [ $? -ne 0 ]; then
-        echo "Timeout. Er wordt een leeg wachtwoord gebruikt."
-        wachtwoord=""
-    else
-        echo "Wachtwoord ingevoerd."
+    wachtwoord_status=$?
+    echo
+
+    if [ $wachtwoord_status -ne 0 ]; then
+        echo "Timeout bij wachtwoordinvoer."
+        return 1
+    fi
+
+    if [ -z "$wachtwoord" ]; then
+        echo "Geen wachtwoord ingevoerd."
+        return 1
     fi
 
     echo "Bezig met klonen van de repository..."
     if git clone "https://${gebruikersnaam}:${wachtwoord}@${repo_url#https://}" "$repo_naam"; then
         echo "Repository succesvol gekloond naar $repo_naam"
         cd "$repo_naam" || exit
+        return 0
     else
         echo "Klonen van de repository is mislukt."
-        exit 1
+        return 1
     fi
 }
 
@@ -145,7 +175,17 @@ main() {
         sudo apt-get install -y git
     fi
 
-    kloon_repository
+    # Probeer de repository te klonen, blijf het proberen tot het lukt of de gebruiker afbreekt
+    while ! kloon_repository; do
+        echo "Wil je het opnieuw proberen? (j/n)"
+        read -n 1 -r antwoord
+        echo
+        if [[ ! $antwoord =~ ^[Jj]$ ]]; then
+            echo "Script wordt afgebroken."
+            exit 1
+        fi
+    done
+
     installeer_pakketten_uit_bestand
 
     echo "Script voltooid."
