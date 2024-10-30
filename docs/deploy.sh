@@ -164,6 +164,7 @@ if [ -f "pak.txt" ]; then
     installeer_pakketten "${pakketten[@]}"
 else
     echo "pak.txt niet gevonden"
+    echo "Negeer als je geen automatische packages nodig hebt"
 fi
 
 cd ..
@@ -171,7 +172,7 @@ cd ..
 if [[ "$del_after_finished" == "true" ]]; then
     sudo rm -f deploy.sh
 else
-
+    # is opzettelijk leeg
 fi
 
 echo "Installatie voltooid!"
