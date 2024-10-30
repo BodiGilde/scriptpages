@@ -1,20 +1,20 @@
 #!/bin/bash
 
-# Optie om NodeJS functie te bypassen, voor debug en presentatie
+# Optie om NodeJS functie te bypassen, voor debug en presentatie | true = bypass | false = voer uit
 nodejs_bypass_switch=true
 
-# Optie om deploy.sh niet te verwijderen, nadat deze is voltooid.
+# Optie om deploy.sh niet te verwijderen, nadat deze is voltooid | true = verwijder script | false = bewaar script
 del_after_finished=false
 
-# Functie om een splashscreen weer te geven
+# Functie om splashscreen weer te geven met script info
 toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.5-Pre-Prod       |"
+    echo "| V1.0.7-Git-Pre-Prod   |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
-    sleep 3
+    sleep 2
 }
 
 # Functie om pakketten te installeren
@@ -85,11 +85,11 @@ installeer_nodejs() {
             return 1
         fi
         
-        sudo rm nodesource_setup.sh  # Verwijder het setup script
+        sudo rm nodesource_setup.sh  # Verwijder het setup script na installatie
     fi
 }
 
-# Functie om een GitHub repository te klonen met Personal Access Token
+# Functie om een GitHub repository te klonen met Personal Access Token (sinds ~2021 verplicht met GitHub)
 clone_github_pat() {
     read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
     read -s -p "Voer je Personal Access Token in: " token
@@ -109,7 +109,7 @@ clone_github_pat() {
     fi
 }
 
-# Functie om een GitHub repository te klonen met gebruikersnaam/wachtwoord
+# Functie om een GitHub repository te klonen met gebruikersnaam/wachtwoord (Legacy bewaard voor de zekerheid en voor public repro's)
 clone_github_userpass() {
     read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
     
@@ -129,13 +129,13 @@ toon_splashscreen
 
 # Installeer benodigde packages
 echo "Vereiste packages worden geïnstalleerd"
-# Date is nodig voor sommige glitches in een VM
-date
+date #Voor VM tijd glitch (zorgt ervoor dat debian package repository niet werkt door de fout: "Release file is not yet valid")
+sudo apt-get update
 sudo apt-get install curl git -y
 
 echo "Kies een optie voor Git repository clone:"
-echo "1. Clone met Personal Access Token (GitHub)"
-echo "2. Clone met gebruikersnaam/wachtwoord (GitHub)"
+echo "1. Clone met Personal Access Token (GitHub Private Repo)"
+echo "2. Clone met gebruikersnaam/wachtwoord (GitHub Public Repo)"
 read -p "Keuze (1/2): " keuze
 
 case $keuze in
@@ -151,11 +151,7 @@ case $keuze in
         ;;
 esac
 
-# Update pakketbeheerder
-echo "Package repository word eerst geüpdatet voor package installatie"
-sudo apt-get update
-
-# Installeer pakketten uit pak.txt als het bestaat
+# Installeer pakketten uit pak.txt als het bestaat in de repo
 if [ -f "pak.txt" ]; then
     echo "Installeren van pakketten uit pak.txt..."
     pakketten=$(cat pak.txt)
@@ -164,7 +160,6 @@ else
     echo "pak.txt niet gevonden"
 fi
 
-# Ga terug naar vorige folder
 cd ..
 # Verwijder het deploy script
 if [[ "$del_after_finished" == "true" ]]; then
