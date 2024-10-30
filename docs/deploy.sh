@@ -80,7 +80,7 @@ installeer_nodejs() {
 toon_splashscreen
 
 # Installeer benodigde packages
-echo ""Vereiste packages worden geïnstalleerd"
+echo "Vereiste packages worden geïnstalleerd"
 sudo apt-get install curl cat git -y
 
 echo "Kies een optie voor Git repository clone:"
@@ -88,7 +88,7 @@ echo "1. Clone met Personal Access Token"
 echo "2. Clone met gebruikersnaam/wachtwoord"
 read -p "Keuze (1/2): " keuze
 
-read -p "Voer de repository URL in (formaat: https://github.com/gebruiker/repo.git, https://gitlab.com/gebruiker/repo.git, of git@localhost:gebruiker/repo.git): " repo_url
+read -p "Voer de repository URL in (formaat: https://github.com/gebruiker/repo.git of git@localhost:gebruiker/repo.git): " repo_url
 
 case $keuze in
     1)
@@ -96,18 +96,15 @@ case $keuze in
         echo
         
         # Controleer of de URL het juiste formaat heeft en bepaal de host
-        if [[ $repo_url =~ ^https?://(github|gitlab)\.com/([^/]+)/([^/]+)\.git$ ]]; then
-            host=${BASH_REMATCH[1]}
-            username=${BASH_REMATCH[2]}
-            repo=${BASH_REMATCH[3]}
+        if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
+            username=${BASH_REMATCH[1]}
+            repo=${BASH_REMATCH[2]}
             # Construeer de URL met token
-            clone_url="https://${token}@${host}.com/${username}/${repo}.git"
+            clone_url="https://${token}@github.com/${username}/${repo}.git"
             git clone "$clone_url"
             cd "$repo"
         elif [[ $repo_url =~ ^git@[^:]+:[^/]+/[^/]+\.git$ ]]; then
-            read -p "Voer de SSH poort in: " ssh_port
-            clone_url="ssh://${repo_url/:/:$ssh_port/}"
-            git clone "$clone_url"
+            git clone "$repo_url"
             repo_name=$(basename "$repo_url" .git)
             cd "$repo_name"
         else
@@ -117,14 +114,12 @@ case $keuze in
         ;;
     2)
         # Controleer of de URL het juiste formaat heeft en bepaal de host
-        if [[ $repo_url =~ ^https?://(github|gitlab)\.com/([^/]+)/([^/]+)\.git$ ]]; then
+        if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
             git clone "$repo_url"
-            repo_name=${BASH_REMATCH[3]}
+            repo_name=${BASH_REMATCH[2]}
             cd "$repo_name"
         elif [[ $repo_url =~ ^git@[^:]+:[^/]+/[^/]+\.git$ ]]; then
-            read -p "Voer de SSH poort in: " ssh_port
-            clone_url="ssh://${repo_url/:/:$ssh_port/}"
-            git clone "$clone_url"
+            git clone "$repo_url"
             repo_name=$(basename "$repo_url" .git)
             cd "$repo_name"
         else
@@ -139,7 +134,7 @@ case $keuze in
 esac
 
 # Update pakketbeheerder
-echo ""Package repository word eerst geüpdatet voor package installatie"
+echo "Package repository word eerst geüpdatet voor package installatie"
 sudo apt-get update
 
 # Installeer pakketten uit pak.txt als het bestaat
