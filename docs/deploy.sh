@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Optie om de NodeJS functie uit te zetten, voor debug en presentatie
-nodejs_switch=false
+nodejs_bypass_switch=true
 
 # Functie om een splashscreen weer te geven
 toon_splashscreen() {
@@ -19,14 +19,14 @@ installeer_pakketten() {
     local pakketten=($1)
     #below for nodejs_switch
     for pakket in "${pakketten[@]}"; do
-        if [[ "$pakket" == NodeJS* && "$nodejs_switch" == "false" ]]; then
+        if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "true" ]]; then
             echo "SW ON"
             continue
         fi
     #above for nodejs_switch
         echo "Verwerken pakket: $pakket"
         #if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
-        if [[ "$pakket" == NodeJS* && "$nodejs_switch" == "true" ]]; then
+        if [[ "$pakket" == NodeJS* && "$nodejs_switch" == "false" ]]; then
             installeer_nodejs "$pakket"
         elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
             echo "Bezig met installeren van ${pakket}..."
