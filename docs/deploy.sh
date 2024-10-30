@@ -11,26 +11,7 @@ toon_splashscreen() {
     sleep 4
 }
 
-# Functie om pakketten te installeren
-installeer_pakketten() {
-    local pakketten=($1)
-    for pakket in "${pakketten[@]}"; do
-        if [[ "$pakket" == NodeJS* ]]; then
-            installeer_nodejs "$pakket"
-        elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
-            echo "Bezig met installeren van ${pakket}..."
-            if sudo apt-get install -y "$pakket"; then
-                echo "${pakket} succesvol geïnstalleerd."
-            else
-                echo "Installatie van ${pakket} mislukt."
-            fi
-        else
-            echo "${pakket} is al geïnstalleerd."
-        fi
-    done
-}
-
-# Subfunctie om NodeJS te installeren
+# Functie om NodeJS te installeren
 installeer_nodejs() {
     local versie=$1
     local setup_url=""
@@ -64,6 +45,25 @@ installeer_nodejs() {
         
         sudo rm nodesource_setup.sh
     fi
+}
+
+# Functie om pakketten te installeren
+installeer_pakketten() {
+    local pakketten=($1)
+    for pakket in "${pakketten[@]}"; do
+        if [[ "$pakket" == NodeJS* ]]; then
+            installeer_nodejs "$pakket"
+        elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
+            echo "Bezig met installeren van ${pakket}..."
+            if sudo apt-get install -y "$pakket"; then
+                echo "${pakket} succesvol geïnstalleerd."
+            else
+                echo "Installatie van ${pakket} mislukt."
+            fi
+        else
+            echo "${pakket} is al geïnstalleerd."
+        fi
+    done
 }
 
 # Start van het hoofdscript
