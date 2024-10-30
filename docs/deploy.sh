@@ -13,10 +13,11 @@ toon_splashscreen() {
 
 # Functie om pakketten te installeren
 installeer_pakketten() {
-    # Lees de pakketten als een string en converteer naar array
-    IFS=' ' read -ra pakketten <<< "$1"
+    local pakketten=($1)
     for pakket in "${pakketten[@]}"; do
-        if ! dpkg -s "$pakket" >/dev/null 2>&1; then
+        if [[ "$pakket" == NodeJS* ]]; then
+            installeer_nodejs "$pakket"
+        elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
             echo "Bezig met installeren van ${pakket}..."
             if sudo apt-get install -y "$pakket"; then
                 echo "${pakket} succesvol geïnstalleerd."
@@ -34,6 +35,7 @@ installeer_nodejs() {
     local versie=$1
     local setup_url=""
 
+    # Stel de setup_url in op basis van de opgegeven versie
     case $versie in
         NodeJS23) setup_url="https://deb.nodesource.com/setup_23.x" ;;
         NodeJS22) setup_url="https://deb.nodesource.com/setup_22.x" ;;
@@ -42,26 +44,30 @@ installeer_nodejs() {
         NodeJS18) setup_url="https://deb.nodesource.com/setup_18.x" ;;
         NodeJSLTS) setup_url="https://deb.nodesource.com/setup_lts.x" ;;
         NodeJSCurrent) setup_url="https://deb.nodesource.com/setup_current.x" ;;
-        *) 
-            echo "Onbekende versie: $versie"
-            return 1 
-        ;;
+        *) echo "Onbekende versie: $versie" && return 1 ;;
     esac
 
     if [ -n "$setup_url" ]; then
         echo "Bezig met installeren van ${versie}..."
         
+        # Download en voer het setup script uit
         if curl -fsSL "$setup_url" -o nodesource_setup.sh &&
-           sudo bash nodesource_setup.sh &&
-           sudo apt-get install -y nodejs; then
-            installed_version=$(node -v)
-            echo "${versie} is succesvol geïnstalleerd. Geïnstalleerde versie: $installed_version"
+           sudo bash nodesource_setup.sh; then
+            
+            # Installeer NodeJS
+            if sudo apt-get install -y nodejs; then
+                installed_version=$(node -v)
+                echo "${versie} is succesvol geïnstalleerd. Geïnstalleerde versie: $installed_version"
+            else
+                echo "Installatie van ${versie} is mislukt."
+                return 1
+            fi
         else
-            echo "Installatie van ${versie} is mislukt."
+            echo "Setup van ${versie} is mislukt."
             return 1
         fi
         
-        sudo rm nodesource_setup.sh
+        sudo rm nodesource_setup.sh  # Verwijder het setup script
     fi
 }
 
