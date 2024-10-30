@@ -111,33 +111,33 @@ clone_github_userpass() {
     fi
 }
 
-# Functie om een .tar.gz-bestand te downloaden en uit te pakken
-download_and_extract_tar_gz() {
-    read -p "Voer de URL in van het .tar.gz-bestand (formaat: http://example.com/path/to/file.tar.gz): " tar_url
+# Functie om een .zip-bestand te downloaden en uit te pakken met bsdtar
+download_and_extract_zip() {
+    read -p "Voer de URL in van het .zip-bestand (formaat: http://example.com/path/to/file.zip): " zip_url
     
-    # Haal de naam van het .tar.gz-bestand uit de URL
-    tar_name=$(basename "$tar_url" .tar.gz)
+    # Haal de naam van het .zip-bestand uit de URL
+    zip_name=$(basename "$zip_url" .zip)
     
-    # Download het .tar.gz-bestand
-    if curl -O "$tar_url"; then
-        echo "$tar_name.tar.gz gedownload."
-        # Controleer of het bestand een geldig .tar.gz-archief is
-        if file "$tar_name.tar.gz" | grep -q 'gzip compressed data'; then
-            # Unzip het .tar.gz-bestand
-            if tar -xzvf "$tar_name.tar.gz"; then
-                echo "$tar_name.tar.gz uitgepakt."
-                rm "$tar_name.tar.gz"  # Verwijder het .tar.gz-bestand
-                cd "$tar_name"
+    # Download het .zip-bestand
+    if curl -O "$zip_url"; then
+        echo "$zip_name.zip gedownload."
+        # Controleer of het bestand een geldig .zip-archief is
+        if file "$zip_name.zip" | grep -q 'Zip archive data'; then
+            # Unzip het .zip-bestand met bsdtar
+            if bsdtar -xf "$zip_name.zip"; then
+                echo "$zip_name.zip uitgepakt."
+                rm "$zip_name.zip"  # Verwijder het .zip-bestand
+                cd "$zip_name"
             else
-                echo "Uitpakken van $tar_name.tar.gz mislukt."
+                echo "Uitpakken van $zip_name.zip mislukt."
                 exit 1
             fi
         else
-            echo "Het gedownloade bestand is geen geldig .tar.gz-archief."
+            echo "Het gedownloade bestand is geen geldig .zip-archief."
             exit 1
         fi
     else
-        echo "Downloaden van $tar_name.tar.gz mislukt."
+        echo "Downloaden van $zip_name.zip mislukt."
         exit 1
     fi
 }
@@ -147,12 +147,12 @@ toon_splashscreen
 
 # Installeer benodigde packages
 echo "Vereiste packages worden geïnstalleerd"
-sudo apt-get install curl cat git -y
+sudo apt-get install curl cat git bsdtar -y
 
 echo "Kies een optie voor Git repository clone:"
 echo "1. Clone met Personal Access Token (GitHub)"
 echo "2. Clone met gebruikersnaam/wachtwoord (GitHub)"
-echo "3. Download en unzip .tar.gz-bestand"
+echo "3. Download en unzip .zip-bestand"
 read -p "Keuze (1/2/3): " keuze
 
 case $keuze in
@@ -163,7 +163,7 @@ case $keuze in
         clone_github_userpass
         ;;
     3)
-        download_and_extract_tar_gz
+        download_and_extract_zip
         ;;
     *)
         echo "Ongeldige keuze"
