@@ -78,7 +78,7 @@ read -p "Keuze (1/2): " keuze
 case $keuze in
     1)
         read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
-        read -p -s "Voer je Personal Access Token in: " token
+        read -s -p "Voer je Personal Access Token in: " token
         
         # Controleer of de URL het juiste formaat heeft
         if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
