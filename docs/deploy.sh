@@ -17,9 +17,15 @@ toon_splashscreen() {
 # Functie om pakketten te installeren
 installeer_pakketten() {
     local pakketten=($1)
+    #below for nodejs_switch
     for pakket in "${pakketten[@]}"; do
+        if [[ "$pakket" == NodeJS* && "$nodejs_switch" == "false" ]]; then
+            echo "SW ON"
+            continue
+        fi
+    #above for nodejs_switch
         echo "Verwerken pakket: $pakket"
-		#if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
+        #if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
         if [[ "$pakket" == NodeJS* && "$nodejs_switch" == "true" ]]; then
             installeer_nodejs "$pakket"
         elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
@@ -120,7 +126,7 @@ toon_splashscreen
 
 # Installeer benodigde packages
 echo "Vereiste packages worden geïnstalleerd"
-sudo apt-get install curl cat git -y
+sudo apt-get install curl git -y
 
 echo "Kies een optie voor Git repository clone:"
 echo "1. Clone met Personal Access Token (GitHub)"
