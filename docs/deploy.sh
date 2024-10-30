@@ -19,14 +19,14 @@ toon_splashscreen() {
 
 # Functie om pakketten te installeren
 installeer_pakketten() {
-    local pakketten=($1)
-    #below for nodejs_switch
+    local pakketten=("$@")
+    # Code onder voor nodejs_bypass_switch
     for pakket in "${pakketten[@]}"; do
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "true" ]]; then
             echo "SW ON"
             continue
         fi
-    #above for nodejs_switch
+    # Code boven for nodejs_bypass_switch
         echo "Verwerken pakket: $pakket"
         #if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "false" ]]; then
@@ -155,7 +155,7 @@ esac
 if [ -f "pak.txt" ]; then
     echo "Installeren van pakketten uit pak.txt..."
     pakketten=$(cat pak.txt)
-    installeer_pakketten "$pakketten"
+    installeer_pakketten "${pakketten[@]}"
 else
     echo "pak.txt niet gevonden"
 fi
@@ -164,7 +164,7 @@ cd ..
 # Verwijder het deploy script
 if [[ "$del_after_finished" == "true" ]]; then
     sudo rm -f deploy.sh
-elif
+else
     continue
 fi
 
