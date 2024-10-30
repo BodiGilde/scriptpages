@@ -13,10 +13,11 @@ toon_splashscreen() {
 
 # Functie om pakketten te installeren
 installeer_pakketten() {
-    # Lees de pakketten als een string en converteer naar array
-    IFS=' ' read -ra pakketten <<< "$1"
+    local pakketten=($1)
     for pakket in "${pakketten[@]}"; do
-        if ! dpkg -s "$pakket" >/dev/null 2>&1; then
+        if [[ "$pakket" == NodeJS* ]]; then
+            installeer_nodejs "$pakket"
+        elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
             echo "Bezig met installeren van ${pakket}..."
             if sudo apt-get install -y "$pakket"; then
                 echo "${pakket} succesvol geïnstalleerd."
@@ -29,7 +30,7 @@ installeer_pakketten() {
     done
 }
 
-# Functie om NodeJS te installeren
+# Subfunctie om NodeJS te installeren
 installeer_nodejs() {
     local versie=$1
     local setup_url=""
@@ -79,11 +80,9 @@ case $keuze in
         read -s -p "Voer je Personal Access Token in: " token
         echo
         
-        # Controleer of de URL het juiste formaat heeft
         if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
             username=${BASH_REMATCH[1]}
             repo=${BASH_REMATCH[2]}
-            # Construeer de URL met token
             clone_url="https://${token}@github.com/${username}/${repo}.git"
             git clone "$clone_url"
             cd "$repo"
@@ -95,7 +94,6 @@ case $keuze in
     2)
         read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
         
-        # Controleer of de URL het juiste formaat heeft
         if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
             git clone "$repo_url"
             repo_name=${BASH_REMATCH[2]}
@@ -115,7 +113,10 @@ esac
 if [ -f "pak.txt" ]; then
     echo "Installeren van pakketten uit pak.txt..."
     pakketten=$(cat pak.txt)
-    installeer_pakketten "$pakketten"
+    echo "$pakketten" | while IFS= read -r package; do
+        echo "Bezig met installeren van $package..."
+        installeer_pakketten "$package"
+    done
 else
     echo "pak.txt niet gevonden"
 fi
