@@ -109,17 +109,22 @@ clone_github_pat() {
     fi
 }
 
-# Functie om een GitHub repository te klonen met gebruikersnaam/wachtwoord (Legacy bewaard voor de zekerheid en voor public repro's)
-clone_github_userpass() {
-    read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
+# Functie om een GitHub\Lab repository te klonen met gebruikersnaam/wachtwoord (Alleen vor Public repro's)
+clone_git_userpass() {
+    read -p "Voer de repository URL in (formaat: https://github.com/gebruiker/repo.git of https://gitlab.com/gebruiker/repo.git): " repo_url
     
     # Controleer of de URL het juiste formaat heeft
     if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
         git clone "$repo_url"
         repo_name=${BASH_REMATCH[2]}
         cd "$repo_name"
+    elif [[ $repo_url =~ ^https://gitlab\.com/([^/]+)/([^/]+)\.git$ ]]; then
+        clone_url="https://${username}:${password}@gitlab.com/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}.git"
+        git clone "$clone_url"
+        repo_name=${BASH_REMATCH[2]}
+        cd "$repo_name"
     else
-        echo "Ongeldige GitHub URL. Gebruik het formaat: https://github.com/gebruiker/repo.git"
+        echo "Ongeldige URL. Gebruik het formaat: https://github.com/gebruiker/repo.git of https://gitlab.com/gebruiker/repo.git"
         exit 1
     fi
 }
@@ -136,7 +141,7 @@ clear #zodat de output voor het volgende keuzemenu er beter uitziet
 
 echo "Kies een optie voor Git repository clone:"
 echo "1. Clone met Personal Access Token (GitHub Private Repo)"
-echo "2. Clone met gebruikersnaam/wachtwoord (GitHub Public Repo)"
+echo "2. Clone met gebruikersnaam/wachtwoord (GitHub/Lab Public Repo)"
 read -p "Keuze (1/2): " keuze
 
 case $keuze in
@@ -144,7 +149,7 @@ case $keuze in
         clone_github_pat
         ;;
     2)
-        clone_github_userpass
+        clone_git_userpass
         ;;
     *)
         echo "Ongeldige keuze"
