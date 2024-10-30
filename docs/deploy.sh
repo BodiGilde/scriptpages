@@ -132,6 +132,7 @@ echo "Vereiste packages worden geïnstalleerd"
 date #Voor VM tijd glitch (zorgt ervoor dat debian package repository niet werkt door de fout: "Release file is not yet valid")
 sudo apt-get update
 sudo apt-get install curl git -y
+clear #zodat de output voor het volgende keuzemenu er beter uitziet
 
 echo "Kies een optie voor Git repository clone:"
 echo "1. Clone met Personal Access Token (GitHub Private Repo)"
