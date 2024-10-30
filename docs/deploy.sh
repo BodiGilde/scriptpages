@@ -5,7 +5,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.0.9-Pre-Prod       |"
+    echo "| V1.1.0-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
@@ -74,15 +74,17 @@ kloon_repository() {
     local wachtwoord
 
     echo "Voer de URL van de GitHub-repository in (of plak deze):"
-    read -r repo_url
+    read -n 1 -p "Input Selection:" repo_url
+    echo
 
     repo_naam=$(basename -s .git "$repo_url")
 
     echo "Voer je GitHub-gebruikersnaam in:"
-    read -r gebruikersnaam
+    read -n 1 -p "Input Selection:" gebruikersnaam
+    echo
 
     echo "Voer je GitHub-wachtwoord of personal access token in:"
-    read -rs wachtwoord
+    read -n 1 -s -p "Input Selection:" wachtwoord
     echo
 
     echo "Bezig met klonen van de repository..."
