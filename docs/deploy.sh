@@ -5,10 +5,10 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.4.0-Pre-Prod       |"
+    echo "| V1.0.5-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
-    sleep 4
+    sleep 3
 }
 
 # Functie om pakketten te installeren
@@ -51,15 +51,6 @@ installeer_nodejs() {
     if [ -n "$setup_url" ]; then
         echo "Bezig met installeren van ${versie}..."
         
-        # Controleer of curl is geïnstalleerd
-        if ! dpkg -s curl >/dev/null 2>&1; then
-            echo "curl is niet geïnstalleerd. Installeren van curl..."
-            if ! sudo apt-get install -y curl; then
-                echo "Installatie van curl mislukt."
-                return 1
-            fi
-        fi
-
         # Download en voer het setup script uit
         if curl -fsSL "$setup_url" -o nodesource_setup.sh; then
             echo "Setup script gedownload."
@@ -88,40 +79,48 @@ installeer_nodejs() {
 # Start van het hoofdscript
 toon_splashscreen
 
-echo "Kies een optie voor GitHub clone:"
+# Installeer benodigde packages
+echo ""Vereiste packages worden geïnstalleerd"
+sudo apt-get install curl cat git -y
+
+echo "Kies een optie voor Git repository clone:"
 echo "1. Clone met Personal Access Token"
 echo "2. Clone met gebruikersnaam/wachtwoord"
 read -p "Keuze (1/2): " keuze
 
+read -p "Voer de repository URL in (formaat: https://github.com/gebruiker/repo.git, https://gitlab.com/gebruiker/repo.git of http://localhost/gebruiker/repo.git): " repo_url
+
 case $keuze in
     1)
-        read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
         read -s -p "Voer je Personal Access Token in: " token
         echo
         
-        # Controleer of de URL het juiste formaat heeft
-        if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
-            username=${BASH_REMATCH[1]}
-            repo=${BASH_REMATCH[2]}
+        # Controleer of de URL het juiste formaat heeft en bepaal de host
+        if [[ $repo_url =~ ^https?://(github|gitlab)\.com/([^/]+)/([^/]+)\.git$ || $repo_url =~ ^http://[^/]+/([^/]+)/([^/]+)\.git$ ]]; then
+            host=${BASH_REMATCH[1]}
+            username=${BASH_REMATCH[2]}
+            repo=${BASH_REMATCH[3]}
             # Construeer de URL met token
-            clone_url="https://${token}@github.com/${username}/${repo}.git"
+            if [[ $repo_url =~ ^http:// ]]; then
+                clone_url="${repo_url}"
+            else
+                clone_url="https://${token}@${host}.com/${username}/${repo}.git"
+            fi
             git clone "$clone_url"
             cd "$repo"
         else
-            echo "Ongeldige GitHub URL. Gebruik het formaat: https://github.com/gebruiker/repo.git"
+            echo "Ongeldige URL. Gebruik het juiste formaat."
             exit 1
         fi
         ;;
     2)
-        read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
-        
-        # Controleer of de URL het juiste formaat heeft
-        if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
+        # Controleer of de URL het juiste formaat heeft en bepaal de host
+        if [[ $repo_url =~ ^https?://(github|gitlab)\.com/([^/]+)/([^/]+)\.git$ || $repo_url =~ ^http://[^/]+/([^/]+)/([^/]+)\.git$ ]]; then
             git clone "$repo_url"
-            repo_name=${BASH_REMATCH[2]}
+            repo_name=${BASH_REMATCH[3]}
             cd "$repo_name"
         else
-            echo "Ongeldige GitHub URL. Gebruik het formaat: https://github.com/gebruiker/repo.git"
+            echo "Ongeldige URL. Gebruik het juiste formaat."
             exit 1
         fi
         ;;
@@ -132,6 +131,7 @@ case $keuze in
 esac
 
 # Update pakketbeheerder
+echo ""Package repository word eerst geüpdatet voor package installatie"
 sudo apt-get update
 
 # Installeer pakketten uit pak.txt als het bestaat
