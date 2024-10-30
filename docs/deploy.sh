@@ -13,7 +13,8 @@ toon_splashscreen() {
 
 # Functie om pakketten te installeren
 installeer_pakketten() {
-    local pakketten=($1)
+    # Lees de pakketten als een string en converteer naar array
+    IFS=' ' read -ra pakketten <<< "$1"
     for pakket in "${pakketten[@]}"; do
         if [[ "$pakket" == NodeJS* ]]; then
             installeer_nodejs "$pakket"
@@ -77,7 +78,7 @@ read -p "Keuze (1/2): " keuze
 case $keuze in
     1)
         read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
-        read -p "Voer je Personal Access Token in: " token
+        read -p -s "Voer je Personal Access Token in: " token
         
         # Controleer of de URL het juiste formaat heeft
         if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
@@ -114,8 +115,8 @@ esac
 # Installeer pakketten uit pak.txt als het bestaat
 if [ -f "pak.txt" ]; then
     echo "Installeren van pakketten uit pak.txt..."
-    mapfile -t pakketten < pak.txt
-    installeer_pakketten "${pakketten[*]}"
+    pakketten=$(cat pak.txt)
+    installeer_pakketten "$pakketten"
 else
     echo "pak.txt niet gevonden"
 fi
