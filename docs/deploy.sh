@@ -80,7 +80,7 @@ installeer_nodejs() {
 toon_splashscreen
 
 # Installeer benodigde packages
-echo "Vereiste packages worden geïnstalleerd"
+echo ""Vereiste packages worden geïnstalleerd"
 sudo apt-get install curl cat git -y
 
 echo "Kies een optie voor Git repository clone:"
@@ -139,7 +139,7 @@ case $keuze in
 esac
 
 # Update pakketbeheerder
-echo "Package repository word eerst geüpdatet voor package installatie"
+echo ""Package repository word eerst geüpdatet voor package installatie"
 sudo apt-get update
 
 # Installeer pakketten uit pak.txt als het bestaat
