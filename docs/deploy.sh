@@ -5,7 +5,7 @@ toon_splashscreen() {
     clear 
     echo "X+++++++++++++++++++++++X"
     echo "| Project Deploy Script |"
-    echo "| V1.1.0-Pre-Prod       |"
+    echo "| V1.3.0-Pre-Prod       |"
     echo "| B.P                   |"
     echo "X+++++++++++++++++++++++X"
     sleep 4  # Wacht 4 seconden voordat je verder gaat
@@ -66,6 +66,31 @@ installeer_nodejs() {
     fi
 }
 
+# Functie om gebruikersinvoer te vragen met een timeout
+vraag_input() {
+    local prompt=$1
+    local var_name=$2
+    local default_value=$3
+    local timeout=60
+
+    echo "$prompt"
+    echo "Je hebt $timeout seconden om te antwoorden. Druk op Enter om de standaardwaarde te gebruiken."
+    read -t $timeout -p "Invoer (standaard: $default_value): " input
+
+    if [ $? -eq 0 ]; then
+        if [ -z "$input" ]; then
+            eval $var_name="'$default_value'"
+            echo "Standaardwaarde gebruikt: $default_value"
+        else
+            eval $var_name="'$input'"
+            echo "Ingevoerde waarde: $input"
+        fi
+    else
+        echo "Timeout. Standaardwaarde wordt gebruikt: $default_value"
+        eval $var_name="'$default_value'"
+    fi
+}
+
 # Functie om een privé GitHub-repository te klonen
 kloon_repository() {
     local repo_url
@@ -73,19 +98,20 @@ kloon_repository() {
     local gebruikersnaam
     local wachtwoord
 
-    echo "Voer de URL van de GitHub-repository in (of plak deze):"
-    read -n 1 -p "Input Selection:" repo_url
-    echo
-
+    vraag_input "Voer de URL van de GitHub-repository in (of plak deze):" repo_url "https://github.com/gebruiker/repo.git"
     repo_naam=$(basename -s .git "$repo_url")
 
-    echo "Voer je GitHub-gebruikersnaam in:"
-    read -n 1 -p "Input Selection:" gebruikersnaam
-    echo
+    vraag_input "Voer je GitHub-gebruikersnaam in:" gebruikersnaam "standaard_gebruiker"
 
     echo "Voer je GitHub-wachtwoord of personal access token in:"
-    read -n 1 -s -p "Input Selection:" wachtwoord
-    echo
+    echo "Je hebt 60 seconden om te antwoorden. Druk op Enter om een leeg wachtwoord te gebruiken."
+    read -s -t 60 wachtwoord
+    if [ $? -ne 0 ]; then
+        echo "Timeout. Er wordt een leeg wachtwoord gebruikt."
+        wachtwoord=""
+    else
+        echo "Wachtwoord ingevoerd."
+    fi
 
     echo "Bezig met klonen van de repository..."
     if git clone "https://${gebruikersnaam}:${wachtwoord}@${repo_url#https://}" "$repo_naam"; then
