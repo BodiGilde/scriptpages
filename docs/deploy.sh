@@ -76,6 +76,66 @@ installeer_nodejs() {
     fi
 }
 
+# Functie om een GitHub repository te klonen met Personal Access Token
+clone_github_pat() {
+    read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
+    read -s -p "Voer je Personal Access Token in: " token
+    echo
+    
+    # Controleer of de URL het juiste formaat heeft
+    if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
+        username=${BASH_REMATCH[1]}
+        repo=${BASH_REMATCH[2]}
+        # Construeer de URL met token
+        clone_url="https://${token}@github.com/${username}/${repo}.git"
+        git clone "$clone_url"
+        cd "$repo"
+    else
+        echo "Ongeldige GitHub URL. Gebruik het formaat: https://github.com/gebruiker/repo.git"
+        exit 1
+    fi
+}
+
+# Functie om een GitHub repository te klonen met gebruikersnaam/wachtwoord
+clone_github_userpass() {
+    read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
+    
+    # Controleer of de URL het juiste formaat heeft
+    if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
+        git clone "$repo_url"
+        repo_name=${BASH_REMATCH[2]}
+        cd "$repo_name"
+    else
+        echo "Ongeldige GitHub URL. Gebruik het formaat: https://github.com/gebruiker/repo.git"
+        exit 1
+    fi
+}
+
+# Functie om een .tar-bestand te downloaden en uit te pakken
+download_and_extract_tar() {
+    read -p "Voer de URL in van het .tar-bestand (formaat: http://example.com/path/to/file.tar): " tar_url
+    
+    # Haal de naam van het .tar-bestand uit de URL
+    tar_name=$(basename "$tar_url" .tar)
+    
+    # Download het .tar-bestand
+    if curl -O "$tar_url"; then
+        echo "$tar_name.tar gedownload."
+        # Unzip het .tar-bestand
+        if tar -xvf "$tar_name.tar"; then
+            echo "$tar_name.tar uitgepakt."
+            rm "$tar_name.tar"  # Verwijder het .tar-bestand
+            cd "$tar_name"
+        else
+            echo "Uitpakken van $tar_name.tar mislukt."
+            exit 1
+        fi
+    else
+        echo "Downloaden van $tar_name.tar mislukt."
+        exit 1
+    fi
+}
+
 # Start van het hoofdscript
 toon_splashscreen
 
@@ -84,48 +144,20 @@ echo "Vereiste packages worden geïnstalleerd"
 sudo apt-get install curl cat git -y
 
 echo "Kies een optie voor Git repository clone:"
-echo "1. Clone met Personal Access Token"
-echo "2. Clone met gebruikersnaam/wachtwoord"
-read -p "Keuze (1/2): " keuze
-
-read -p "Voer de repository URL in (formaat: https://github.com/gebruiker/repo.git of git@localhost:gebruiker/repo.git): " repo_url
+echo "1. Clone met Personal Access Token (GitHub)"
+echo "2. Clone met gebruikersnaam/wachtwoord (GitHub)"
+echo "3. Download en unzip .tar-bestand"
+read -p "Keuze (1/2/3): " keuze
 
 case $keuze in
     1)
-        read -s -p "Voer je Personal Access Token in: " token
-        echo
-        
-        # Controleer of de URL het juiste formaat heeft en bepaal de host
-        if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
-            username=${BASH_REMATCH[1]}
-            repo=${BASH_REMATCH[2]}
-            # Construeer de URL met token
-            clone_url="https://${token}@github.com/${username}/${repo}.git"
-            git clone "$clone_url"
-            cd "$repo"
-        elif [[ $repo_url =~ ^git@[^:]+:[^/]+/[^/]+\.git$ ]]; then
-            git clone "$repo_url"
-            repo_name=$(basename "$repo_url" .git)
-            cd "$repo_name"
-        else
-            echo "Ongeldige URL. Gebruik het juiste formaat."
-            exit 1
-        fi
+        clone_github_pat
         ;;
     2)
-        # Controleer of de URL het juiste formaat heeft en bepaal de host
-        if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
-            git clone "$repo_url"
-            repo_name=${BASH_REMATCH[2]}
-            cd "$repo_name"
-        elif [[ $repo_url =~ ^git@[^:]+:[^/]+/[^/]+\.git$ ]]; then
-            git clone "$repo_url"
-            repo_name=$(basename "$repo_url" .git)
-            cd "$repo_name"
-        else
-            echo "Ongeldige URL. Gebruik het juiste formaat."
-            exit 1
-        fi
+        clone_github_userpass
+        ;;
+    3)
+        download_and_extract_tar
         ;;
     *)
         echo "Ongeldige keuze"
