@@ -16,9 +16,7 @@ installeer_pakketten() {
     # Lees de pakketten als een string en converteer naar array
     IFS=' ' read -ra pakketten <<< "$1"
     for pakket in "${pakketten[@]}"; do
-        if [[ "$pakket" == NodeJS* ]]; then
-            installeer_nodejs "$pakket"
-        elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
+        if ! dpkg -s "$pakket" >/dev/null 2>&1; then
             echo "Bezig met installeren van ${pakket}..."
             if sudo apt-get install -y "$pakket"; then
                 echo "${pakket} succesvol geïnstalleerd."
@@ -78,7 +76,8 @@ read -p "Keuze (1/2): " keuze
 case $keuze in
     1)
         read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
-        read -p "Voer je Personal Access Token in: " token
+        read -s -p "Voer je Personal Access Token in: " token
+        echo
         
         # Controleer of de URL het juiste formaat heeft
         if [[ $repo_url =~ ^https://github\.com/([^/]+)/([^/]+)\.git$ ]]; then
