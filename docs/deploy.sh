@@ -20,15 +20,12 @@ toon_splashscreen() {
 # Functie om pakketten te installeren
 installeer_pakketten() {
     local pakketten=($1)
-    #below for nodejs_switch
     for pakket in "${pakketten[@]}"; do
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "true" ]]; then
             echo "SW ON"
             continue
         fi
-    #above for nodejs_switch
         echo "Verwerken pakket: $pakket"
-        #if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "false" ]]; then
             installeer_nodejs "$pakket"
         elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
@@ -39,7 +36,17 @@ installeer_pakketten() {
                 echo "Installatie van ${pakket} mislukt."
             fi
         else
-            echo "${pakket} is al geïnstalleerd."
+            # Controleer of het pakket correct is geïnstalleerd
+            if ! dpkg -L "$pakket" >/dev/null 2>&1; then
+                echo "${pakket} lijkt niet correct geïnstalleerd te zijn. Probeer opnieuw te installeren..."
+                if sudo apt-get install -y --reinstall "$pakket"; then
+                    echo "${pakket} succesvol opnieuw geïnstalleerd."
+                else
+                    echo "Opnieuw installeren van ${pakket} mislukt."
+                fi
+            else
+                echo "${pakket} is al geïnstalleerd."
+            fi
         fi
     done
 }
