@@ -20,15 +20,12 @@ toon_splashscreen() {
 # Functie om pakketten te installeren
 installeer_pakketten() {
     local pakketten=("$@")
-    # Code onder voor nodejs_bypass_switch
     for pakket in "${pakketten[@]}"; do
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "true" ]]; then
             echo "SW ON"
             continue
         fi
-    # Code boven for nodejs_bypass_switch
         echo "Verwerken pakket: $pakket"
-        #if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "false" ]]; then
             installeer_nodejs "$pakket"
         elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
