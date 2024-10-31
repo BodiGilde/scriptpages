@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Optie om NodeJS functie te bypassen, voor debug en presentatie | true = bypass | false = voer uit
+# Optie om NodeJS functie te bypassen, voor debug en presentatie. Functie werkt nu nog niet | true = bypass | false = voer uit
 nodejs_bypass_switch=true
 
 # Optie om deploy.sh niet te verwijderen, nadat deze is voltooid | true = verwijder script | false = bewaar script
 del_after_finished=true
 
-# Optie om dpkg controle uit te schakelen | true = controleer | false = negeer
+# Optie om dpkg controle uit te schakelen voor debug of om installatie te forceren | true = controleer | false = negeer
 dpkg_check=true
 
 # Functie om splashscreen weer te geven met script info
