@@ -168,9 +168,8 @@ esac
 # Installeer pakketten uit pak.txt als het bestaat in de repo
 if [ -f "pak.txt" ]; then
     echo "Installeren van pakketten uit pak.txt..."
-    while IFS= read -r pakket; do
-        installeer_pakketten "$pakket"
-    done < pak.txt
+    pakketten=$(cat pak.txt)
+    installeer_pakketten "$pakketten"
 else
     echo "pak.txt niet gevonden"
     echo "Negeer als je geen automatische packages nodig hebt"
