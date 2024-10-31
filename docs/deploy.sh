@@ -6,6 +6,9 @@ nodejs_bypass_switch=true
 # Optie om deploy.sh niet te verwijderen, nadat deze is voltooid | true = verwijder script | false = bewaar script
 del_after_finished=true
 
+# Optie om dpkg controle uit te schakelen | true = controleer | false = negeer
+dpkg_check=false
+
 # Functie om splashscreen weer te geven met script info
 toon_splashscreen() {
     clear 
@@ -20,33 +23,34 @@ toon_splashscreen() {
 # Functie om pakketten te installeren
 installeer_pakketten() {
     local pakketten=($1)
+    local dpkg_check=$2
+    #below for nodejs_switch
     for pakket in "${pakketten[@]}"; do
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "true" ]]; then
             echo "SW ON"
             continue
         fi
+    #above for nodejs_switch
         echo "Verwerken pakket: $pakket"
+        #if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "false" ]]; then
             installeer_nodejs "$pakket"
-        elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
+        elif [[ "$dpkg_check" == "true" && ! dpkg -s "$pakket" >/dev/null 2>&1 ]]; then
             echo "Bezig met installeren van ${pakket}..."
             if sudo apt-get install -y "$pakket"; then
                 echo "${pakket} succesvol geïnstalleerd."
             else
                 echo "Installatie van ${pakket} mislukt."
             fi
-        else
-            # Controleer of het pakket correct is geïnstalleerd
-            if ! dpkg -L "$pakket" >/dev/null 2>&1; then
-                echo "${pakket} lijkt niet correct geïnstalleerd te zijn. Probeer opnieuw te installeren..."
-                if sudo apt-get install -y --reinstall "$pakket"; then
-                    echo "${pakket} succesvol opnieuw geïnstalleerd."
-                else
-                    echo "Opnieuw installeren van ${pakket} mislukt."
-                fi
+        elif [[ "$dpkg_check" == "false" ]]; then
+            echo "Bezig met installeren van ${pakket} | Pre check off"
+            if sudo apt-get install -y "$pakket"; then
+                echo "${pakket} succesvol geïnstalleerd."
             else
-                echo "${pakket} is al geïnstalleerd."
+                echo "Installatie van ${pakket} mislukt."
             fi
+        else
+            echo "${pakket} is al geïnstalleerd."
         fi
     done
 }
@@ -176,7 +180,7 @@ esac
 if [ -f "pak.txt" ]; then
     echo "Installeren van pakketten uit pak.txt..."
     pakketten=$(cat pak.txt)
-    installeer_pakketten "$pakketten"
+    installeer_pakketten "$pakketten" "$dpkg_check"
 else
     echo "pak.txt niet gevonden"
     echo "Negeer als je geen automatische packages nodig hebt"
