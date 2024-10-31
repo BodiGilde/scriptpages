@@ -24,33 +24,32 @@ toon_splashscreen() {
 installeer_pakketten() {
     local pakketten=($1)
     local dpkg_check=$2
-    #below for nodejs_switch
     for pakket in "${pakketten[@]}"; do
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "true" ]]; then
             echo "SW ON"
             continue
         fi
-    #above for nodejs_switch
         echo "Verwerken pakket: $pakket"
-        #if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "false" ]]; then
             installeer_nodejs "$pakket"
-        elif [[ "$dpkg_check" == "true" && ! dpkg -s "$pakket" >/dev/null 2>&1 ]]; then
-            echo "Bezig met installeren van ${pakket}..."
-            if sudo apt-get install -y "$pakket"; then
-                echo "${pakket} succesvol geïnstalleerd."
+        elif [[ "$dpkg_check" == "true" ]]; then
+            if ! dpkg -s "$pakket" >/dev/null 2>&1; then
+                echo "Bezig met installeren van ${pakket}..."
+                if sudo apt-get install -y "$pakket"; then
+                    echo "${pakket} succesvol geïnstalleerd."
+                else
+                    echo "Installatie van ${pakket} mislukt."
+                fi
             else
-                echo "Installatie van ${pakket} mislukt."
-            fi
-        elif [[ "$dpkg_check" == "false" ]]; then
-            echo "Bezig met installeren van ${pakket} | Pre check off"
-            if sudo apt-get install -y "$pakket"; then
-                echo "${pakket} succesvol geïnstalleerd."
-            else
-                echo "Installatie van ${pakket} mislukt."
+                echo "${pakket} is al geïnstalleerd."
             fi
         else
-            echo "${pakket} is al geïnstalleerd."
+            echo "Bezig met installeren van ${pakket} zonder dpkg controle..."
+            if sudo apt-get install -y "$pakket"; then
+                echo "${pakket} succesvol geïnstalleerd."
+            else
+                echo "Installatie van ${pakket} mislukt."
+            fi
         fi
     done
 }
