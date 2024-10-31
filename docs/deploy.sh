@@ -89,9 +89,9 @@ installeer_nodejs() {
     fi
 }
 
-# Functie om een GitHub repository te klonen met Personal Access Token (sinds ~2021 verplicht met GitHub)
-clone_github_pat() {
-    read -p "Voer de GitHub repository URL in (formaat: https://github.com/gebruiker/repo.git): " repo_url
+# Functie om een GitHub/Lab repository te klonen met Personal Access Token (sinds ~2021 verplicht met GitHub Gitlab onbekend)
+clone_git_pat() {
+    read -p "Voer de GitHub/Lab repository URL in (formaat: https://github.com/gebruiker/repo.git of https://gitlab.com/gebruiker/repo.git): " repo_url
     read -s -p "Voer je Personal Access Token in: " token
     echo
     
@@ -103,8 +103,15 @@ clone_github_pat() {
         clone_url="https://${token}@github.com/${username}/${repo}.git"
         git clone "$clone_url"
         cd "$repo"
+    elif [[ $repo_url =~ ^https://gitlab\.com/([^/]+)/([^/]+)\.git$ ]]; then
+        username=${BASH_REMATCH[1]}
+        repo=${BASH_REMATCH[2]}
+        # Construeer de URL met token
+        clone_url="https://${token}@gitlab.com/${username}/${repo}.git"
+        git clone "$clone_url"
+        cd "$repo"
     else
-        echo "Ongeldige GitHub URL. Gebruik het formaat: https://github.com/gebruiker/repo.git"
+        echo "Ongeldige URL. Gebruik het formaat: https://github.com/gebruiker/repo.git of https://gitlab.com/gebruiker/repo.git"
         exit 1
     fi
 }
@@ -141,13 +148,13 @@ sleep 3 #geef leestijd van de output die is gedaan
 clear #zodat de output voor het volgende keuzemenu er beter uitziet
 
 echo "Kies een optie voor Git repository clone:"
-echo "1. Clone met Personal Access Token (GitHub Private Repo)"
+echo "1. Clone met Personal Access Token (GitHub/Lab Private Repo)"
 echo "2. Clone met gebruikersnaam/wachtwoord (GitHub/Lab Public Repo)"
 read -p "Keuze (1/2): " keuze
 
 case $keuze in
     1)
-        clone_github_pat
+        clone_git_pat
         ;;
     2)
         clone_git_userpass
