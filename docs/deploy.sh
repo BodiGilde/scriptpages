@@ -19,13 +19,16 @@ toon_splashscreen() {
 
 # Functie om pakketten te installeren
 installeer_pakketten() {
-    local pakketten=("$@")
+    local pakketten=($1)
+    #below for nodejs_switch
     for pakket in "${pakketten[@]}"; do
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "true" ]]; then
             echo "SW ON"
             continue
         fi
+    #above for nodejs_switch
         echo "Verwerken pakket: $pakket"
+        #if [[ "$pakket" == NodeJS* ]]; then (old code before switch)
         if [[ "$pakket" == NodeJS* && "$nodejs_bypass_switch" == "false" ]]; then
             installeer_nodejs "$pakket"
         elif ! dpkg -s "$pakket" >/dev/null 2>&1; then
@@ -165,8 +168,9 @@ esac
 # Installeer pakketten uit pak.txt als het bestaat in de repo
 if [ -f "pak.txt" ]; then
     echo "Installeren van pakketten uit pak.txt..."
-    pakketten=$(cat pak.txt)
-    installeer_pakketten "${pakketten[@]}"
+    while IFS= read -r pakket; do
+        installeer_pakketten "$pakket"
+    done < pak.txt
 else
     echo "pak.txt niet gevonden"
     echo "Negeer als je geen automatische packages nodig hebt"
