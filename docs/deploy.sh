@@ -7,7 +7,7 @@ nodejs_bypass_switch=true
 del_after_finished=true
 
 # Optie om dpkg controle uit te schakelen | true = controleer | false = negeer
-dpkg_check=false
+dpkg_check=true
 
 # Functie om splashscreen weer te geven met script info
 toon_splashscreen() {
