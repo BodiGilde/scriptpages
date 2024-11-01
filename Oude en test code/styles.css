@@ -1,0 +1,20 @@
+/* Center all text in the body */
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;  /* Center all text */
+    margin: 0;
+    padding: 20px;
+    background-color: #f4f4f4;
+}
+
+/* Style for h1 */
+h1 {
+    color: #333;
+    font-size: 2em;  /* Font size for h1 */
+}
+
+/* Style for h2 */
+h2 {
+    font-size: 1.2em;  /* Smaller font size for h2 */
+    color: #555;
+}
